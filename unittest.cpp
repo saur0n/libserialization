@@ -86,6 +86,7 @@ int main(int argc, char ** argv) {
     static const char * FILENAME="temporary.data";
     static const uint8_t MAGIC[8]={'R', 'o', 'h', 'a', 'n', '.', '~', '1'};
     const size_t ARRAYSIZE=8;
+    const size_t NFIB=64;
     
     try {
         // Various arrays of integers
@@ -112,6 +113,16 @@ int main(int argc, char ** argv) {
             
             // Write magic number and version
             fos | MAGIC | uint8_t(1);
+            
+            // Write first Fibonacci numbers
+            fos | NFIB;
+            uint64_t a=0, b=1;
+            for (unsigned i=0; i<NFIB; i++) {
+                fos | a;
+                uint64_t tmp=b;
+                b+=a;
+                a=tmp;
+            }
             
             // Write boolean values
             bool trueValue=true, falseValue=false;
@@ -154,6 +165,17 @@ int main(int argc, char ** argv) {
                 throw "wrong magic number";
             if (version!=1)
                 throw "wrong version";
+            
+            // Read first Fibbonaci numbers
+            unsigned count;
+            fis | count;
+            uint64_t a=0, b=1;
+            for (unsigned i=0; i<count; i++) {
+                readValue<uint64_t>(fis, a, "wrong Fibonacci number");
+                uint64_t tmp=b;
+                b+=a;
+                a=tmp;
+            }
             
             // Read boolean values
             readValue<bool>(fis, true, "wrong boolean");

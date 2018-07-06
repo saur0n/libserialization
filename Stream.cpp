@@ -15,7 +15,7 @@ unsigned long long rohan::readVariableInteger(InputStream &stream) {
     unsigned shift=0;
     while (byte&0x80) {
         stream | byte;
-        result|=((byte&0x7f)<<shift);
+        result|=((unsigned long long)(byte&0x7f)<<shift);
         shift+=7;
     }
     return result;
