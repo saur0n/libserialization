@@ -11,7 +11,7 @@ UNITTEST=unittest
 all: $(LIBRARY) $(UNITTEST)
 
 clean:
-	rm -f $(LIBRARY) $(UNITTEST)
+	rm -f $(LIBRARY) $(UNITTEST) temporary.data
 
 install:
 
