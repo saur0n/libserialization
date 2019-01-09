@@ -130,7 +130,22 @@ int main(int argc, char ** argv) {
             
             // Write integers
             writeInteger<char>(fos);
+            writeInteger<signed char>(fos);
             writeInteger<unsigned char>(fos);
+            writeInteger<short>(fos);
+            writeInteger<signed short>(fos);
+            writeInteger<unsigned short>(fos);
+            writeInteger<int>(fos);
+            writeInteger<signed int>(fos);
+            writeInteger<unsigned int>(fos);
+            writeInteger<long>(fos);
+            writeInteger<signed long>(fos);
+            writeInteger<unsigned long>(fos);
+            writeInteger<long long>(fos);
+            writeInteger<signed long long>(fos);
+            writeInteger<unsigned long long>(fos);
+            
+            // Write integers with stdint-style names
             writeInteger<int8_t>(fos);
             writeInteger<uint8_t>(fos);
             writeInteger<int16_t>(fos);
@@ -183,7 +198,22 @@ int main(int argc, char ** argv) {
             
             // Read integers
             readInteger<char>(fis);
+            readInteger<signed char>(fis);
             readInteger<unsigned char>(fis);
+            readInteger<short>(fis);
+            readInteger<signed short>(fis);
+            readInteger<unsigned short>(fis);
+            readInteger<int>(fis);
+            readInteger<signed int>(fis);
+            readInteger<unsigned int>(fis);
+            readInteger<long>(fis);
+            readInteger<signed long>(fis);
+            readInteger<unsigned long>(fis);
+            readInteger<long long>(fis);
+            readInteger<signed long long>(fis);
+            readInteger<unsigned long long>(fis);
+            
+            // Read integers with stdint-style names
             readInteger<int8_t>(fis);
             readInteger<uint8_t>(fis);
             readInteger<int16_t>(fis);

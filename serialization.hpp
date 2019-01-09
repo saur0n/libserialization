@@ -47,7 +47,7 @@ inline OutputStream &operator |(OutputStream &stream, const type &value) { \
 
 #define _RW_LEB128(type) \
 inline InputStream &operator |(InputStream &stream, type &value) { \
-    value=type(readVariableInteger(stream)); \
+    value=static_cast<type>(readVariableInteger(stream)); \
     return stream; \
 } \
 inline OutputStream &operator |(OutputStream &stream, const type &value) { \
@@ -57,7 +57,7 @@ inline OutputStream &operator |(OutputStream &stream, const type &value) { \
 
 #define _RW_ZIGZAG(type) \
 inline InputStream &operator |(InputStream &stream, type &value) { \
-    value=type(readSignedVariableInteger(stream)); \
+    value=static_cast<type>(readSignedVariableInteger(stream)); \
     return stream; \
 } \
 inline OutputStream &operator |(OutputStream &stream, const type &value) { \
@@ -69,13 +69,15 @@ _RW_FIXED(bool)
 _RW_FIXED(char)
 _RW_FIXED(int8_t)
 _RW_FIXED(uint8_t)
-_RW_LEB128(wchar_t);
+_RW_LEB128(wchar_t)
 _RW_ZIGZAG(int16_t)
 _RW_LEB128(uint16_t)
 _RW_ZIGZAG(int32_t)
 _RW_LEB128(uint32_t)
 _RW_ZIGZAG(int64_t)
 _RW_LEB128(uint64_t)
+_RW_LEB128(unsigned long long)
+_RW_ZIGZAG(long long)
 _RW_FIXED(float)
 _RW_FIXED(double)
 _RW_FIXED(long double)
