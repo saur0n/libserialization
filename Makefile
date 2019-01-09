@@ -1,10 +1,10 @@
 ################################################################################
 #   Rohan data serialization library.
 #
-#   © 2016—2018, Sauron
+#   © 2016—2019, Sauron
 ################################################################################
 
-CXXFLAGS=-Wall -std=gnu++11 -O3
+CXXFLAGS=-Wall -Wextra -std=gnu++11 -O3
 LIBRARY=libserialization.so
 UNITTEST=unittest
 
@@ -14,6 +14,7 @@ clean:
 	rm -f $(LIBRARY) $(UNITTEST) temporary.data
 
 install:
+	install --strip libserialization.so /usr/local/lib64
 
 test: $(UNITTEST)
 	./$(UNITTEST)
