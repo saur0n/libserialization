@@ -1,11 +1,11 @@
 /*******************************************************************************
  *  Rohan data serialization library.
  *  
- *  © 2016—2018, Sauron
+ *  © 2016—2019, Sauron
  ******************************************************************************/
 
 #include <cstring>
-#include "Stream.hpp"
+#include "serialization.hpp"
 
 using namespace rohan;
 

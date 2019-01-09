@@ -2,7 +2,7 @@
  *  Rohan data serialization library
  *  Unit tests
  *  
- *  © 2016—2018, Sauron
+ *  © 2016—2019, Sauron
  ******************************************************************************/
 
 #include <cerrno>
@@ -11,7 +11,7 @@
 #include <fcntl.h>
 #include <iostream>
 #include <unistd.h>
-#include "Stream.hpp"
+#include "serialization.hpp"
 
 using namespace rohan;
 using namespace std;

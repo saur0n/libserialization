@@ -15,12 +15,13 @@ clean:
 
 install:
 	install --strip libserialization.so /usr/local/lib64
+	cp -f *.hpp /usr/include
 
 test: $(UNITTEST)
 	./$(UNITTEST)
 
 $(LIBRARY): *.cpp *.hpp
-	g++ $(CXXFLAGS) -shared -fPIC -o $(LIBRARY) -l stdc++ Stream.cpp
+	g++ $(CXXFLAGS) -shared -fPIC -o $(LIBRARY) -l stdc++ serialization.cpp
 
 $(UNITTEST): *.cpp *.hpp
 	g++ $(CXXFLAGS) -o $(UNITTEST) -l stdc++ *.cpp
