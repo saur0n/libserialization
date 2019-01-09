@@ -1,8 +1,11 @@
-## libserialization
+# libserialization
 
 This library allows to serialize standard C++ data types to binary form.
 
+## Supported data types
+
 The following types are supported:
+
 * `bool`
 * `char`
 * `int8_t`
@@ -19,6 +22,6 @@ The following types are supported:
 * fixed-size arrays
 * `std::array`
 * `std::basic_string`
+* `std::map`
 * `std::vector`
 * `std::pair`
-

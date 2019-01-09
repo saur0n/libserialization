@@ -94,10 +94,14 @@ int main(int argc, char ** argv) {
         std::array<int, ARRAYSIZE> integers;
         std::vector<int> integerv(ARRAYSIZE);
         std::vector<std::pair<unsigned, float>> pairs(ARRAYSIZE);
+        std::map<unsigned, std::string> map;
         for (unsigned i=0; i<ARRAYSIZE; i++) {
             ints[i]=integers[i]=integerv[i]=sequence(i);
             pairs[i].first=i;
             pairs[i].second=sequence(i);
+            char buffer[32];
+            sprintf(buffer, "{%u==0x%08x}", i, i);
+            map[i]=buffer;
         }
         
         // C-style strings
@@ -168,6 +172,9 @@ int main(int argc, char ** argv) {
             
             // Write pairs
             fos | pairs;
+            
+            // Write maps
+            fos | map;
         }
         
         {
@@ -252,6 +259,9 @@ int main(int argc, char ** argv) {
             
             // Read pairs
             readValue(fis, pairs, "wrong pairs");
+            
+            // Read map
+            readValue(fis, map, "wrong map");
         }
         
         cerr << "SUCCESS" << endl;

@@ -10,6 +10,7 @@
 #include <array>
 #include <cstdint>
 #include <cwchar>
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -150,6 +151,26 @@ InputStream &operator |(InputStream &stream, std::pair<X, Y> &value) {
 template <class X, class Y>
 OutputStream &operator |(OutputStream &stream, const std::pair<X, Y> &value) {
     return stream | value.first | value.second;
+}
+
+template <class K, class V>
+InputStream &operator |(InputStream &stream, std::map<K, V> &map) {
+    size_t length=readVariableInteger(stream);
+    map.clear();
+    for (size_t i=0; i<length; i++) {
+        std::pair<K, V> pair;
+        stream | pair;
+        map.insert(pair);
+    }
+    return stream;
+}
+
+template <class K, class V>
+OutputStream &operator |(OutputStream &stream, const std::map<K, V> &map) {
+    writeVariableInteger(stream, map.size());
+    for (auto i=map.begin(); i!=map.end(); ++i)
+        stream | *i;
+    return stream;
 }
 
 OutputStream &operator |(OutputStream &stream, const char * string);
