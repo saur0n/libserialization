@@ -4,8 +4,8 @@
  *  © 2016—2019, Sauron
  ******************************************************************************/
 
-#ifndef __STREAM_HPP
-#define __STREAM_HPP
+#ifndef __SERIALIZATION_HPP
+#define __SERIALIZATION_HPP
 
 #include <array>
 #include <cstdint>
