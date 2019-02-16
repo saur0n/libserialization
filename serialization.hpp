@@ -12,6 +12,7 @@
 #include <cwchar>
 #include <map>
 #include <string>
+#include <system_error>
 #include <utility>
 #include <vector>
 
@@ -176,6 +177,66 @@ OutputStream &operator |(OutputStream &stream, const std::map<K, V> &map) {
 OutputStream &operator |(OutputStream &stream, const char * string);
 
 OutputStream &operator |(OutputStream &stream, const wchar_t * string);
+
+/*******************************************************************************
+ *  INPUT/OUTPUT STREAM IMPEMENTATIONS
+ ******************************************************************************/
+
+/** Thrown at end-of-file **/
+class End {};
+
+/** Reader for buffered data **/
+class ByteArrayInputStream : public InputStream {
+public:
+    /**/
+    ByteArrayInputStream(std::vector<uint8_t> &buffer, size_t offset=0);
+    /** Returns underlying byte array **/
+    std::vector<uint8_t> &getBuffer() const { return buffer; }
+    /**/
+    void read(void * to, size_t length);
+    
+private:
+    std::vector<uint8_t> &buffer;
+    size_t offset;
+};
+
+/** Writer for buffered data **/
+class ByteArrayOutputStream : public OutputStream {
+public:
+    /**/
+    ByteArrayOutputStream(std::vector<uint8_t> &buffer);
+    /** Returns underlying byte array **/
+    std::vector<uint8_t> &getBuffer() const { return buffer; }
+    /**/
+    void write(const void * from, size_t length);
+    
+private:
+    std::vector<uint8_t> &buffer;
+};
+
+/** Reader for file descriptors **/
+class FileInputStream : public InputStream {
+public:
+    /**/
+    FileInputStream(int fd) : fd(fd) {}
+    /**/
+    void read(void * to, size_t length);
+    
+private:
+    int fd;
+};
+
+/** Writer for file descriptors **/
+class FileOutputStream : public OutputStream {
+public:
+    /**/
+    FileOutputStream(int fd) : fd(fd) {}
+    /**/
+    void write(const void * buffer, size_t length);
+    
+private:
+    int fd;
+};
 
 }
 

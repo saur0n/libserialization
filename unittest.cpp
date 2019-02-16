@@ -16,36 +16,21 @@
 using namespace rohan;
 using namespace std;
 
-class FileStream {
+class File {
 public:
-    FileStream(const char * filename, int mode, int rights=0) : fd(open(filename, mode, rights)) {
+    File(const char * filename, int mode=O_RDONLY, int rights=0) : fd(open(filename, mode, rights)) {
         if (fd<0)
             throw errno;
     }
-    virtual ~FileStream() {
+    virtual ~File() {
         close(fd);
     }
+    int getDescriptor() const { return fd; }
     
 protected:
-    FileStream(FileStream &)=delete;
+    File(File &)=delete;
     
     int fd;
-};
-
-class FileInputStream : public InputStream, private FileStream {
-public:
-    FileInputStream(const char * filename) : FileStream(filename, O_RDONLY) {}
-    void read(void * data, size_t length) {
-        ::read(fd, data, length);
-    }
-};
-
-class FileOutputStream : public OutputStream, private FileStream {
-public:
-    FileOutputStream(const char * filename) : FileStream(filename, O_WRONLY|O_TRUNC|O_CREAT, 0600) {}
-    void write(const void * data, size_t length) {
-        ::write(fd, data, length);
-    }
 };
 
 static int sequence(size_t index) {
@@ -113,7 +98,8 @@ int main(int argc, char ** argv) {
         std::wstring wcxxstring(wcstring);
         
         {
-            FileOutputStream fos(FILENAME);
+            File of(FILENAME, O_WRONLY|O_CREAT|O_TRUNC, 0600);
+            FileOutputStream fos(of.getDescriptor());
             
             // Write magic number and version
             fos | MAGIC | uint8_t(1);
@@ -178,7 +164,8 @@ int main(int argc, char ** argv) {
         }
         
         {
-            FileInputStream fis(FILENAME);
+            File file(FILENAME);
+            FileInputStream fis(file.getDescriptor());
             
             // Read magic number and version
             uint8_t magic[8], version;

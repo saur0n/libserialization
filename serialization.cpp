@@ -4,10 +4,14 @@
  *  © 2016—2019, Sauron
  ******************************************************************************/
 
+#include <cerrno>
 #include <cstring>
+#include <unistd.h>
 #include "serialization.hpp"
 
 using namespace rohan;
+using std::system_error;
+using std::vector;
 
 unsigned long long rohan::readVariableInteger(InputStream &stream) {
     unsigned long long result=0;
@@ -51,4 +55,50 @@ OutputStream &rohan::operator |(OutputStream &stream, const wchar_t * string) {
     size_t length=wcslen(string);
     stream | length;
     return writeArray(stream, string, length);
+}
+
+/******************************************************************************/
+
+ByteArrayInputStream::ByteArrayInputStream(vector<uint8_t> &buffer,
+        size_t offset) : buffer(buffer), offset(offset) {}
+
+void ByteArrayInputStream::read(void * to, size_t length) {
+    if (buffer.size()<offset+length)
+        throw End();
+    memcpy(to, &buffer[offset], length);
+    offset+=length;
+}
+
+/******************************************************************************/
+
+ByteArrayOutputStream::ByteArrayOutputStream(vector<uint8_t> &buffer) :
+        buffer(buffer) {}
+
+void ByteArrayOutputStream::write(const void * from, size_t length) {
+    size_t oldSize=buffer.size();
+    buffer.resize(oldSize+length);
+    memcpy(&buffer[oldSize], from, length);
+}
+
+/******************************************************************************/
+
+void FileInputStream::read(void * to, size_t length) {
+    size_t nr=0;
+    while (nr<length) {
+        auto retval=::read(fd, reinterpret_cast<uint8_t *>(to)+nr, length);
+        if (retval<0)
+            throw system_error(errno, std::generic_category());
+        else if (retval==0)
+            throw End();
+        else
+            nr+=retval;
+    }
+}
+
+/******************************************************************************/
+
+void FileOutputStream::write(const void * buffer, size_t length) {
+    auto retval=::write(fd, buffer, length);
+    if (retval<0)
+        throw system_error(errno, std::generic_category());
 }
