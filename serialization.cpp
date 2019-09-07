@@ -59,7 +59,7 @@ OutputStream &rohan::operator |(OutputStream &stream, const wchar_t * string) {
 
 /******************************************************************************/
 
-ByteArrayInputStream::ByteArrayInputStream(vector<uint8_t> &buffer,
+ByteArrayInputStream::ByteArrayInputStream(const vector<uint8_t> &buffer,
         size_t offset) : buffer(buffer), offset(offset) {}
 
 void ByteArrayInputStream::read(void * to, size_t length) {

@@ -78,8 +78,8 @@ _RW_ZIGZAG(int32_t)
 _RW_LEB128(uint32_t)
 _RW_ZIGZAG(int64_t)
 _RW_LEB128(uint64_t)
-_RW_LEB128(unsigned long long)
 _RW_ZIGZAG(long long)
+_RW_LEB128(unsigned long long)
 _RW_FIXED(float)
 _RW_FIXED(double)
 _RW_FIXED(long double)
@@ -189,14 +189,14 @@ class End {};
 class ByteArrayInputStream : public InputStream {
 public:
     /**/
-    ByteArrayInputStream(std::vector<uint8_t> &buffer, size_t offset=0);
+    ByteArrayInputStream(const std::vector<uint8_t> &buffer, size_t offset=0);
     /** Returns underlying byte array **/
-    std::vector<uint8_t> &getBuffer() const { return buffer; }
+    const std::vector<uint8_t> &getBuffer() const { return buffer; }
     /**/
     void read(void * to, size_t length);
     
 private:
-    std::vector<uint8_t> &buffer;
+    const std::vector<uint8_t> &buffer;
     size_t offset;
 };
 
