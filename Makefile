@@ -6,7 +6,7 @@
 
 CXXFLAGS=-Wall -Wextra -std=gnu++11 -O3
 LIBRARY=libserialization.so
-SOURCES=Stream.cpp
+SOURCES=Stream.cpp ByteArrayStream.cpp
 UNITTEST=unittest
 
 all: $(LIBRARY) $(UNITTEST)
@@ -21,7 +21,7 @@ install: $(LIBRARY)
 test: $(UNITTEST)
 	./$(UNITTEST)
 
-$(LIBRARY): *.cpp *.hpp
+$(LIBRARY): $(SOURCES) *.hpp
 	g++ $(CXXFLAGS) -shared -fPIC -o $(LIBRARY) -l stdc++ $(SOURCES)
 
 $(UNITTEST): *.cpp *.hpp
