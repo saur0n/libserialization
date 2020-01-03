@@ -25,3 +25,16 @@ The following types are supported:
 * `std::map`
 * `std::vector`
 * `std::pair`
+
+## Usage
+
+The following include statement is necessary:
+```
+#include <rohan/Stream.hpp>
+```
+
+Optional:
+```
+using rohan::InputStream;
+using rohan::OutputStream;
+```

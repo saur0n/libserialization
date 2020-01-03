@@ -11,7 +11,7 @@
 #include <fcntl.h>
 #include <iostream>
 #include <unistd.h>
-#include "serialization.hpp"
+#include "Stream.hpp"
 
 using namespace rohan;
 using namespace std;
@@ -68,6 +68,8 @@ static void writeFloat(OutputStream &stream) {
 }
 
 int main(int argc, char ** argv) {
+    (void)argc;
+    
     static const char * FILENAME="temporary.data";
     static const uint8_t MAGIC[8]={'R', 'o', 'h', 'a', 'n', '.', '~', '1'};
     const size_t ARRAYSIZE=8;

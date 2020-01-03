@@ -7,7 +7,7 @@
 #include <cerrno>
 #include <cstring>
 #include <unistd.h>
-#include "serialization.hpp"
+#include "Stream.hpp"
 
 using namespace rohan;
 using std::system_error;
