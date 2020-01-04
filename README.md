@@ -4,8 +4,7 @@ This library allows to serialize standard C++ data types to binary form.
 
 ## Supported data types
 
-The following types are supported:
-
+Serializing and deserializing of the following data types is supported:
 * `bool`
 * `char`
 * `int8_t`
@@ -18,13 +17,16 @@ The following types are supported:
 * `uint64_t`
 * `long long` (not the same as `int64_t`)
 * `unsigned long long` (not the same as `uint64_t`)
-* `const char *` (C-strings)
 * fixed-size arrays
 * `std::array`
 * `std::basic_string`
 * `std::map`
 * `std::vector`
 * `std::pair`
+
+Serialization of the following data types is supported:
+* `const char *` (C-strings)
+* any classes with `serialize()` method
 
 ## Usage
 
@@ -33,7 +35,7 @@ The following include statement is necessary:
 #include <rohan/Stream.hpp>
 ```
 
-Optional:
+Optional `using` directives:
 ```
 using rohan::InputStream;
 using rohan::OutputStream;

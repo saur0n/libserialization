@@ -22,6 +22,7 @@ namespace rohan {
 class InputStream {
 public:
     virtual ~InputStream() {}
+    /** Read a portion of data **/
     virtual void read(void * to, size_t length)=0;
 };
 
@@ -29,6 +30,7 @@ public:
 class OutputStream {
 public:
     virtual ~OutputStream() {}
+    /** Write a portion of data **/
     virtual void write(const void * from, size_t length)=0;
 };
 
@@ -95,6 +97,12 @@ template <class T>
 inline OutputStream &writeArray(OutputStream &stream, const T &array, size_t n) {
     for (size_t i=0; i<n; i++)
         stream | array[i];
+    return stream;
+}
+
+template <class T, class = decltype(&T::serialize)>
+inline OutputStream &operator |(OutputStream &stream, const T &value) {
+    value.serialize(stream);
     return stream;
 }
 

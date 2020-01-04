@@ -33,6 +33,66 @@ protected:
     int fd;
 };
 
+/*
+ *  This class is an example of usage of the serialize() method.
+ */
+class Variant {
+public:
+    explicit Variant(bool boolean) : type(boolean?1:0), number(0) {}
+    explicit Variant(unsigned number) : type(2), number(number) {}
+    bool isBoolean() const {
+        return type<2;
+    }
+    bool getBoolean() const {
+        if (!isBoolean())
+            throw "type mismatch";
+        else
+            return type==1;
+    }
+    bool isNumber() const {
+        return type==2;
+    }
+    unsigned getNumber() const {
+        if (!isNumber())
+            throw "type mismatch";
+        else
+            return number;
+    }
+    void serialize(OutputStream &os) const {
+        os | type;
+        if (isNumber())
+            os | number;
+    }
+    bool operator ==(const Variant &other) const {
+        if (type!=other.type)
+            return false;
+        else if ((type==2)&&(number!=other.number))
+            return false;
+        else
+            return true;
+    }
+    bool operator !=(const Variant &other) const {
+        return !operator ==(other);
+    }
+    
+private:
+    unsigned char type;
+    unsigned number;
+};
+
+// this function is temporary
+static Variant readVariant(InputStream &is) {
+    unsigned char type;
+    is | type;
+    if (type==2) {
+        unsigned number;
+        is | number;
+        return Variant(number);
+    }
+    else
+        return Variant(bool(type));
+}
+
 static int sequence(size_t index) {
     return (index*539871334)%2395983;
 }
@@ -82,6 +142,7 @@ int main(int argc, char ** argv) {
         std::vector<int> integerv(ARRAYSIZE);
         std::vector<std::pair<unsigned, float>> pairs(ARRAYSIZE);
         std::map<unsigned, std::string> map;
+        std::vector<Variant> variantv;
         for (unsigned i=0; i<ARRAYSIZE; i++) {
             ints[i]=integers[i]=integerv[i]=sequence(i);
             pairs[i].first=i;
@@ -89,6 +150,12 @@ int main(int argc, char ** argv) {
             char buffer[32];
             sprintf(buffer, "{%u==0x%08x}", i, i);
             map[i]=buffer;
+            if (i%9==0)
+                variantv.emplace_back(true);
+            else if (i%2==0)
+                variantv.emplace_back(false);
+            else
+                variantv.emplace_back(i);
         }
         
         // C-style strings
@@ -163,6 +230,12 @@ int main(int argc, char ** argv) {
             
             // Write maps
             fos | map;
+            
+            // Write single variant values
+            fos | Variant(false) | Variant(true) | Variant(0x31337U);
+            
+            // Write an array of variants
+            fos | variantv;
         }
         
         {
@@ -251,6 +324,26 @@ int main(int argc, char ** argv) {
             
             // Read map
             readValue(fis, map, "wrong map");
+            
+            // Read single variant values
+            Variant v1=readVariant(fis);
+            if (v1.getBoolean()!=false)
+                throw "wrong variant #1";
+            Variant v2=readVariant(fis);
+            if (v2.getBoolean()!=true)
+                throw "wrong variant #2";
+            Variant v3=readVariant(fis);
+            if (v3.getNumber()!=0x31337U)
+                throw "wrong variant #3";
+            
+            // Read an array of variants
+            unsigned vsize;
+            fis | vsize;
+            for (size_t i=0; i<vsize; i++) {
+                Variant vi=readVariant(fis);
+                if (variantv[i]!=vi)
+                    throw "wrong variant";
+            }
         }
         
         cerr << "SUCCESS" << endl;
