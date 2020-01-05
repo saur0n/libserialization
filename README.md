@@ -20,13 +20,17 @@ Serializing and deserializing of the following data types is supported:
 * fixed-size arrays
 * `std::array`
 * `std::basic_string`
-* `std::map`
-* `std::vector`
 * `std::pair`
 
 Serialization of the following data types is supported:
 * `const char *` (C-strings)
 * any classes with `serialize()` method
+* `std::vector`
+* `std::map`
+
+Deserialization of the following data types is supported:
+* `std::vector<T>`, where T is default constructible or `InputStream` constructible
+* `std::map<K, V>`, where K and V are both default constructible
 
 ## Usage
 

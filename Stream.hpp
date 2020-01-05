@@ -139,7 +139,15 @@ OutputStream &operator |(OutputStream &stream, const std::basic_string<T> &strin
     return writeArray(stream, string, length);
 }
 
-template <class T>
+template <class T, typename std::enable_if<std::is_constructible<T, InputStream &>::value, int>::type=0>
+InputStream &operator |(InputStream &stream, std::vector<T> &vector) {
+    size_t n=readVariableInteger(stream);
+    for (size_t i=0; i<n; i++)
+        vector.emplace_back(stream);
+    return stream;
+}
+
+template <class T, typename std::enable_if<std::is_default_constructible<T>::value, int>::type=0>
 InputStream &operator |(InputStream &stream, std::vector<T> &vector) {
     vector.resize(readVariableInteger(stream));
     return readArray(stream, vector, vector.size());

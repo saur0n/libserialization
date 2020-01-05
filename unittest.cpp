@@ -40,6 +40,11 @@ class Variant {
 public:
     explicit Variant(bool boolean) : type(boolean?1:0), number(0) {}
     explicit Variant(unsigned number) : type(2), number(number) {}
+    explicit Variant(InputStream &is) : type(0), number(0) {
+        is | type;
+        if (type==2)
+            is | number;
+    }
     bool isBoolean() const {
         return type<2;
     }
@@ -80,19 +85,6 @@ private:
     unsigned number;
 };
 
-// this function is temporary
-static Variant readVariant(InputStream &is) {
-    unsigned char type;
-    is | type;
-    if (type==2) {
-        unsigned number;
-        is | number;
-        return Variant(number);
-    }
-    else
-        return Variant(bool(type));
-}
-
 static int sequence(size_t index) {
     return (index*539871334)%2395983;
 }
@@ -102,6 +94,12 @@ static void readValue(InputStream &is, T correct, const char * error) {
     T x;
     is | x;
     if (x!=correct)
+        throw error;
+}
+
+static void readVariant(InputStream &is, Variant correct, const char * error) {
+    Variant v(is);
+    if (v!=correct)
         throw error;
 }
 
@@ -326,24 +324,18 @@ int main(int argc, char ** argv) {
             readValue(fis, map, "wrong map");
             
             // Read single variant values
-            Variant v1=readVariant(fis);
-            if (v1.getBoolean()!=false)
-                throw "wrong variant #1";
-            Variant v2=readVariant(fis);
-            if (v2.getBoolean()!=true)
-                throw "wrong variant #2";
-            Variant v3=readVariant(fis);
-            if (v3.getNumber()!=0x31337U)
-                throw "wrong variant #3";
+            readVariant(fis, Variant(false), "wrong variant #1");
+            readVariant(fis, Variant(true), "wrong variant #2");
+            readVariant(fis, Variant(0x31337U), "wrong variant #3");
             
             // Read an array of variants
-            unsigned vsize;
-            fis | vsize;
-            for (size_t i=0; i<vsize; i++) {
-                Variant vi=readVariant(fis);
-                if (variantv[i]!=vi)
+            std::vector<Variant> nvariantv;
+            fis | nvariantv;
+            if (variantv.size()!=nvariantv.size())
+                throw "wrong size of variant vector";
+            for (size_t i=0; i<variantv.size(); i++)
+                if (variantv[i]!=nvariantv[i])
                     throw "wrong variant";
-            }
         }
         
         cerr << "SUCCESS" << endl;
