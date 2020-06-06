@@ -7,15 +7,15 @@
 #ifndef __ROHAN_BYTEARRAYSTREAM_HPP
 #define __ROHAN_BYTEARRAYSTREAM_HPP
 
-#include "Stream.hpp"
+#include "Serialization.hpp"
 
 namespace rohan {
 
 /** Reader for buffered data **/
-class ByteArrayInputStream : public InputStream {
+class ByteArrayReader : public Reader {
 public:
     /**/
-    ByteArrayInputStream(const std::vector<uint8_t> &buffer, size_t offset=0);
+    ByteArrayReader(const std::vector<uint8_t> &buffer, size_t offset=0);
     /** Returns underlying byte array **/
     const std::vector<uint8_t> &getBuffer() const { return buffer; }
     /**/
@@ -27,10 +27,10 @@ private:
 };
 
 /** Writer for buffered data **/
-class ByteArrayOutputStream : public OutputStream {
+class ByteArrayWriter : public Writer {
 public:
     /**/
-    ByteArrayOutputStream(std::vector<uint8_t> &buffer);
+    ByteArrayWriter(std::vector<uint8_t> &buffer);
     /** Returns underlying byte array **/
     std::vector<uint8_t> &getBuffer() const { return buffer; }
     /**/

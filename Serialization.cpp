@@ -1,19 +1,19 @@
 /*******************************************************************************
  *  Rohan data serialization library.
  *  
- *  © 2016—2019, Sauron
+ *  © 2016—2020, Sauron
  ******************************************************************************/
 
 #include <cerrno>
 #include <cstring>
 #include <unistd.h>
-#include "Stream.hpp"
+#include "Serialization.hpp"
 
 using namespace rohan;
 using std::system_error;
 using std::vector;
 
-unsigned long long rohan::readVariableInteger(InputStream &stream) {
+unsigned long long rohan::readVariableInteger(Reader &stream) {
     unsigned long long result=0;
     uint8_t byte=0x80;
     unsigned shift=0;
@@ -25,7 +25,7 @@ unsigned long long rohan::readVariableInteger(InputStream &stream) {
     return result;
 }
 
-void rohan::writeVariableInteger(OutputStream &stream, unsigned long long value) {
+void rohan::writeVariableInteger(Writer &stream, unsigned long long value) {
     uint8_t len=0, buffer[16];
     while (value>=0x80) {
         buffer[len++]=0x80|(0x7f&value);
@@ -35,23 +35,23 @@ void rohan::writeVariableInteger(OutputStream &stream, unsigned long long value)
     stream.write(buffer, len);
 }
 
-signed long long rohan::readSignedVariableInteger(InputStream &stream) {
+signed long long rohan::readSignedVariableInteger(Reader &stream) {
     unsigned long long tmp=readVariableInteger(stream);
     return ((1&tmp)?(tmp^(~0)):tmp)>>1;
 }
 
-void rohan::writeSignedVariableInteger(OutputStream &stream, signed long long value) {
+void rohan::writeSignedVariableInteger(Writer &stream, signed long long value) {
     writeVariableInteger(stream, value>=0?(value<<1):(value<<1)^(~0));
 }
 
-OutputStream &rohan::operator |(OutputStream &stream, const char * string) {
+Writer &rohan::operator |(Writer &stream, const char * string) {
     size_t length=strlen(string);
     stream | length;
     stream.write(string, length);
     return stream;
 }
 
-OutputStream &rohan::operator |(OutputStream &stream, const wchar_t * string) {
+Writer &rohan::operator |(Writer &stream, const wchar_t * string) {
     size_t length=wcslen(string);
     stream | length;
     return writeArray(stream, string, length);
@@ -59,7 +59,7 @@ OutputStream &rohan::operator |(OutputStream &stream, const wchar_t * string) {
 
 /******************************************************************************/
 
-void FileInputStream::read(void * to, size_t length) {
+void FileReader::read(void * to, size_t length) {
     size_t nr=0;
     while (nr<length) {
         auto retval=::read(fd, reinterpret_cast<uint8_t *>(to)+nr, length);
@@ -74,7 +74,7 @@ void FileInputStream::read(void * to, size_t length) {
 
 /******************************************************************************/
 
-void FileOutputStream::write(const void * buffer, size_t length) {
+void FileWriter::write(const void * buffer, size_t length) {
     auto retval=::write(fd, buffer, length);
     if (retval<0)
         throw system_error(errno, std::generic_category());

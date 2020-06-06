@@ -1,11 +1,11 @@
 /*******************************************************************************
  *  Rohan data serialization library.
  *  
- *  © 2016—2019, Sauron
+ *  © 2016—2020, Sauron
  ******************************************************************************/
 
-#ifndef __ROHAN_STREAM_HPP
-#define __ROHAN_STREAM_HPP
+#ifndef __ROHAN_SERIALIZATION_HPP
+#define __ROHAN_SERIALIZATION_HPP
 
 #include <array>
 #include <cstdint>
@@ -19,52 +19,52 @@
 namespace rohan {
 
 /** Abstract data source **/
-class InputStream {
+class Reader {
 public:
-    virtual ~InputStream() {}
+    virtual ~Reader() {}
     /** Read a portion of data **/
     virtual void read(void * to, size_t length)=0;
 };
 
 /** Abstract data sink **/
-class OutputStream {
+class Writer {
 public:
-    virtual ~OutputStream() {}
+    virtual ~Writer() {}
     /** Write a portion of data **/
     virtual void write(const void * from, size_t length)=0;
 };
 
-unsigned long long readVariableInteger(InputStream &stream);
-void writeVariableInteger(OutputStream &stream, unsigned long long value);
-signed long long readSignedVariableInteger(InputStream &stream);
-void writeSignedVariableInteger(OutputStream &stream, signed long long value);
+unsigned long long readVariableInteger(Reader &stream);
+void writeVariableInteger(Writer &stream, unsigned long long value);
+signed long long readSignedVariableInteger(Reader &stream);
+void writeSignedVariableInteger(Writer &stream, signed long long value);
 
 #define _RW_FIXED(type) \
-inline InputStream &operator |(InputStream &stream, type &value) { \
+inline Reader &operator |(Reader &stream, type &value) { \
     stream.read(&value, sizeof(value)); \
     return stream; \
 } \
-inline OutputStream &operator |(OutputStream &stream, const type &value) { \
+inline Writer &operator |(Writer &stream, const type &value) { \
     stream.write(&value, sizeof(value)); \
     return stream; \
 }
 
 #define _RW_LEB128(type) \
-inline InputStream &operator |(InputStream &stream, type &value) { \
+inline Reader &operator |(Reader &stream, type &value) { \
     value=static_cast<type>(readVariableInteger(stream)); \
     return stream; \
 } \
-inline OutputStream &operator |(OutputStream &stream, const type &value) { \
+inline Writer &operator |(Writer &stream, const type &value) { \
     writeVariableInteger(stream, value); \
     return stream; \
 }
 
 #define _RW_ZIGZAG(type) \
-inline InputStream &operator |(InputStream &stream, type &value) { \
+inline Reader &operator |(Reader &stream, type &value) { \
     value=static_cast<type>(readSignedVariableInteger(stream)); \
     return stream; \
 } \
-inline OutputStream &operator |(OutputStream &stream, const type &value) { \
+inline Writer &operator |(Writer &stream, const type &value) { \
     writeSignedVariableInteger(stream, value); \
     return stream; \
 }
@@ -87,60 +87,60 @@ _RW_FIXED(double)
 _RW_FIXED(long double)
 
 template <class T>
-inline InputStream &readArray(InputStream &stream, T &array, size_t n) {
+inline Reader &readArray(Reader &stream, T &array, size_t n) {
     for (size_t i=0; i<n; i++)
         stream | array[i];
     return stream;
 }
 
 template <class T>
-inline OutputStream &writeArray(OutputStream &stream, const T &array, size_t n) {
+inline Writer &writeArray(Writer &stream, const T &array, size_t n) {
     for (size_t i=0; i<n; i++)
         stream | array[i];
     return stream;
 }
 
 template <class T, class = decltype(&T::serialize)>
-inline OutputStream &operator |(OutputStream &stream, const T &value) {
+inline Writer &operator |(Writer &stream, const T &value) {
     value.serialize(stream);
     return stream;
 }
 
 template <class T, size_t n>
-InputStream &operator |(InputStream &stream, T (&value)[n]) {
+Reader &operator |(Reader &stream, T (&value)[n]) {
     return readArray(stream, value, n);
 }
 
 template <class T, size_t n>
-OutputStream &operator |(OutputStream &stream, const T (&value)[n]) {
+Writer &operator |(Writer &stream, const T (&value)[n]) {
     return writeArray(stream, value, n);
 }
 
 template <class T, size_t n>
-InputStream &operator |(InputStream &stream, std::array<T, n> &array) {
+Reader &operator |(Reader &stream, std::array<T, n> &array) {
     return readArray(stream, array, n);
 }
 
 template <class T, size_t n>
-OutputStream &operator |(OutputStream &stream, std::array<T, n> &array) {
+Writer &operator |(Writer &stream, std::array<T, n> &array) {
     return writeArray(stream, array, n);
 }
 
 template <class T>
-InputStream &operator |(InputStream &stream, std::basic_string<T> &string) {
+Reader &operator |(Reader &stream, std::basic_string<T> &string) {
     string.resize(readVariableInteger(stream));
     return readArray(stream, string, string.length());
 }
 
 template <class T>
-OutputStream &operator |(OutputStream &stream, const std::basic_string<T> &string) {
+Writer &operator |(Writer &stream, const std::basic_string<T> &string) {
     size_t length=string.length();
     writeVariableInteger(stream, length);
     return writeArray(stream, string, length);
 }
 
-template <class T, typename std::enable_if<std::is_constructible<T, InputStream &>::value, int>::type=0>
-InputStream &operator |(InputStream &stream, std::vector<T> &vector) {
+template <class T, typename std::enable_if<std::is_constructible<T, Reader &>::value, int>::type=0>
+Reader &operator |(Reader &stream, std::vector<T> &vector) {
     size_t n=readVariableInteger(stream);
     for (size_t i=0; i<n; i++)
         vector.emplace_back(stream);
@@ -148,30 +148,30 @@ InputStream &operator |(InputStream &stream, std::vector<T> &vector) {
 }
 
 template <class T, typename std::enable_if<std::is_default_constructible<T>::value, int>::type=0>
-InputStream &operator |(InputStream &stream, std::vector<T> &vector) {
+Reader &operator |(Reader &stream, std::vector<T> &vector) {
     vector.resize(readVariableInteger(stream));
     return readArray(stream, vector, vector.size());
 }
 
 template <class T>
-OutputStream &operator |(OutputStream &stream, const std::vector<T> &vector) {
+Writer &operator |(Writer &stream, const std::vector<T> &vector) {
     size_t length=vector.size();
     writeVariableInteger(stream, length);
     return writeArray(stream, vector, length);
 }
 
 template <class X, class Y>
-InputStream &operator |(InputStream &stream, std::pair<X, Y> &value) {
+Reader &operator |(Reader &stream, std::pair<X, Y> &value) {
     return stream | value.first | value.second;
 }
 
 template <class X, class Y>
-OutputStream &operator |(OutputStream &stream, const std::pair<X, Y> &value) {
+Writer &operator |(Writer &stream, const std::pair<X, Y> &value) {
     return stream | value.first | value.second;
 }
 
 template <class K, class V>
-InputStream &operator |(InputStream &stream, std::map<K, V> &map) {
+Reader &operator |(Reader &stream, std::map<K, V> &map) {
     size_t length=readVariableInteger(stream);
     map.clear();
     for (size_t i=0; i<length; i++) {
@@ -183,16 +183,16 @@ InputStream &operator |(InputStream &stream, std::map<K, V> &map) {
 }
 
 template <class K, class V>
-OutputStream &operator |(OutputStream &stream, const std::map<K, V> &map) {
+Writer &operator |(Writer &stream, const std::map<K, V> &map) {
     writeVariableInteger(stream, map.size());
     for (auto i=map.begin(); i!=map.end(); ++i)
         stream | *i;
     return stream;
 }
 
-OutputStream &operator |(OutputStream &stream, const char * string);
+Writer &operator |(Writer &stream, const char * string);
 
-OutputStream &operator |(OutputStream &stream, const wchar_t * string);
+Writer &operator |(Writer &stream, const wchar_t * string);
 
 /*******************************************************************************
  *  INPUT/OUTPUT STREAM IMPEMENTATIONS
@@ -202,10 +202,10 @@ OutputStream &operator |(OutputStream &stream, const wchar_t * string);
 class End {};
 
 /** Reader for file descriptors **/
-class FileInputStream : public InputStream {
+class FileReader : public Reader {
 public:
     /**/
-    FileInputStream(int fd) : fd(fd) {}
+    FileReader(int fd) : fd(fd) {}
     /**/
     void read(void * to, size_t length);
     
@@ -214,10 +214,10 @@ private:
 };
 
 /** Writer for file descriptors **/
-class FileOutputStream : public OutputStream {
+class FileWriter : public Writer {
 public:
     /**/
-    FileOutputStream(int fd) : fd(fd) {}
+    FileWriter(int fd) : fd(fd) {}
     /**/
     void write(const void * buffer, size_t length);
     

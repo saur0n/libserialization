@@ -2,7 +2,7 @@
  *  Rohan data serialization library
  *  Unit tests
  *  
- *  © 2016—2019, Sauron
+ *  © 2016—2020, Sauron
  ******************************************************************************/
 
 #include <cerrno>
@@ -11,7 +11,7 @@
 #include <fcntl.h>
 #include <iostream>
 #include <unistd.h>
-#include "Stream.hpp"
+#include "Serialization.hpp"
 
 using namespace rohan;
 using namespace std;
@@ -40,7 +40,7 @@ class Variant {
 public:
     explicit Variant(bool boolean) : type(boolean?1:0), number(0) {}
     explicit Variant(unsigned number) : type(2), number(number) {}
-    explicit Variant(InputStream &is) : type(0), number(0) {
+    explicit Variant(Reader &is) : type(0), number(0) {
         is | type;
         if (type==2)
             is | number;
@@ -63,7 +63,7 @@ public:
         else
             return number;
     }
-    void serialize(OutputStream &os) const {
+    void serialize(Writer &os) const {
         os | type;
         if (isNumber())
             os | number;
@@ -90,38 +90,38 @@ static int sequence(size_t index) {
 }
 
 template <class T>
-static void readValue(InputStream &is, T correct, const char * error) {
+static void readValue(Reader &is, T correct, const char * error) {
     T x;
     is | x;
     if (x!=correct)
         throw error;
 }
 
-static void readVariant(InputStream &is, Variant correct, const char * error) {
+static void readVariant(Reader &is, Variant correct, const char * error) {
     Variant v(is);
     if (v!=correct)
         throw error;
 }
 
 template <class T>
-static void readInteger(InputStream &is) {
+static void readInteger(Reader &is) {
     readValue<T>(is, 0, "wrong integer");
     readValue<T>(is, T(0xfeac9c0), "wrong integer");
 }
 
 template <class T>
-static void readFloat(InputStream &is) {
+static void readFloat(Reader &is) {
     readValue<T>(is, 0.0, "wrong float");
     readValue<T>(is, M_PI, "wrong float");
 }
 
 template <class T>
-static void writeInteger(OutputStream &stream) {
+static void writeInteger(Writer &stream) {
     stream | T(0) | T(0xfeac9c0);
 }
 
 template <class T>
-static void writeFloat(OutputStream &stream) {
+static void writeFloat(Writer &stream) {
     stream | T(0.0) | T(M_PI);
 }
 
@@ -166,7 +166,7 @@ int main(int argc, char ** argv) {
         
         {
             File of(FILENAME, O_WRONLY|O_CREAT|O_TRUNC, 0600);
-            FileOutputStream fos(of.getDescriptor());
+            FileWriter fos(of.getDescriptor());
             
             // Write magic number and version
             fos | MAGIC | uint8_t(1);
@@ -238,7 +238,7 @@ int main(int argc, char ** argv) {
         
         {
             File file(FILENAME);
-            FileInputStream fis(file.getDescriptor());
+            FileReader fis(file.getDescriptor());
             
             // Read magic number and version
             uint8_t magic[8], version;

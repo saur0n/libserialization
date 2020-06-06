@@ -1,12 +1,12 @@
 ################################################################################
 #   Rohan data serialization library.
 #
-#   © 2016—2019, Sauron
+#   © 2016—2020, Sauron
 ################################################################################
 
 CXXFLAGS=-Wall -Wextra -std=gnu++11 -O3
 LIBRARY=libserialization.so
-SOURCES=Stream.cpp ByteArrayStream.cpp
+SOURCES=Serialization.hpp ByteArraySerialization.hpp FileSerialization.hpp
 UNITTEST=unittest
 
 all: $(LIBRARY) $(UNITTEST)
