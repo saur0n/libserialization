@@ -21,14 +21,23 @@ namespace rohan {
 /** Abstract data source **/
 class Reader {
 public:
+    /** Virtual destructor **/
     virtual ~Reader() {}
     /** Read a portion of data **/
     virtual void read(void * to, size_t length)=0;
+    /** Unserialize a value using procedural style **/
+    template <class T>
+    inline explicit operator T() {
+        T result;
+        *this | result;
+        return result;
+    }
 };
 
 /** Abstract data sink **/
 class Writer {
 public:
+    /** Virtual destructor **/
     virtual ~Writer() {}
     /** Write a portion of data **/
     virtual void write(const void * from, size_t length)=0;
@@ -193,6 +202,37 @@ Writer &operator |(Writer &stream, const std::map<K, V> &map) {
 Writer &operator |(Writer &stream, const char * string);
 
 Writer &operator |(Writer &stream, const wchar_t * string);
+
+/*******************************************************************************
+ *  COMPARISON OPERATORS
+ ******************************************************************************/
+
+template <class T>
+bool __equals(const T &a, const T &b) {
+    return a==b;
+}
+
+template <class T, size_t n>
+bool __equals(const T (&a)[n], const T (&b)[n]) {
+    for (size_t i=0; i<n; i++)
+        if (!__equals(a[i], b[i]))
+            return false;
+    return true;
+}
+
+template <class T>
+bool operator ==(Reader &reader, const T &refValue) {
+    T value;
+    reader | value;
+    return __equals(value, refValue);
+}
+
+template <class T>
+bool operator !=(Reader &reader, const T &refValue) {
+    T value;
+    reader | value;
+    return !__equals(value, refValue);
+}
 
 /*******************************************************************************
  *  INPUT/OUTPUT STREAM IMPEMENTATIONS

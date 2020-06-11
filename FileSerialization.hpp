@@ -4,8 +4,8 @@
  *  © 2016—2020, Sauron
  ******************************************************************************/
 
-#ifndef __ROHAN_FILESTREAM_HPP
-#define __ROHAN_FILESTREAM_HPP
+#ifndef __ROHAN_FILESERIALIZATION_HPP
+#define __ROHAN_FILESERIALIZATION_HPP
 
 
 

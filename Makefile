@@ -6,7 +6,8 @@
 
 CXXFLAGS=-Wall -Wextra -std=gnu++11 -O3
 LIBRARY=libserialization.so
-SOURCES=Serialization.hpp ByteArraySerialization.hpp FileSerialization.hpp
+HEADERS=*Serialization.hpp
+SOURCES=*Serialization.cpp
 UNITTEST=unittest
 
 all: $(LIBRARY) $(UNITTEST)
@@ -21,7 +22,7 @@ install: $(LIBRARY)
 test: $(UNITTEST)
 	./$(UNITTEST)
 
-$(LIBRARY): $(SOURCES) *.hpp
+$(LIBRARY): $(SOURCES) $(HEADERS)
 	g++ $(CXXFLAGS) -shared -fPIC -o $(LIBRARY) -l stdc++ $(SOURCES)
 
 $(UNITTEST): *.cpp *.hpp
