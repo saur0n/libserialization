@@ -156,7 +156,7 @@ Reader &operator |(Reader &stream, std::vector<T> &vector) {
     return stream;
 }
 
-template <class T, typename std::enable_if<std::is_default_constructible<T>::value, int>::type=0>
+template <class T, typename std::enable_if<std::is_default_constructible<T>::value && !std::is_constructible<T, Reader &>::value, int>::type=0>
 Reader &operator |(Reader &stream, std::vector<T> &vector) {
     vector.resize(readVariableInteger(stream));
     return readArray(stream, vector, vector.size());

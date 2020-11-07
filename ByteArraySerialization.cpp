@@ -22,6 +22,10 @@ void ByteArrayReader::read(void * to, size_t length) {
     offset+=length;
 }
 
+size_t ByteArrayReader::available() const {
+    return buffer.size()-offset;
+}
+
 /******************************************************************************/
 
 ByteArrayWriter::ByteArrayWriter(vector<uint8_t> &buffer) :

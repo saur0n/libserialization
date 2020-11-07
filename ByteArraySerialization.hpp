@@ -18,8 +18,12 @@ public:
     ByteArrayReader(const std::vector<uint8_t> &buffer, size_t offset=0);
     /** Returns underlying byte array **/
     const std::vector<uint8_t> &getBuffer() const { return buffer; }
-    /**/
+    /** Read a portion of data **/
     void read(void * to, size_t length);
+    /** Returns the number of bytes which are already read **/
+    size_t consumed() const { return offset; }
+    /** Returns the number of bytes that can be read **/
+    size_t available() const;
     
 private:
     const std::vector<uint8_t> &buffer;
@@ -33,7 +37,7 @@ public:
     ByteArrayWriter(std::vector<uint8_t> &buffer);
     /** Returns underlying byte array **/
     std::vector<uint8_t> &getBuffer() const { return buffer; }
-    /**/
+    /** Write a portion of data **/
     void write(const void * from, size_t length);
     
 private:
