@@ -2,19 +2,19 @@
  *  Rohan data serialization library.
  *  Serialization to unix++ streams
  * 
- *  © 2020, Sauron
+ *  © 2020—2021, Sauron
  ******************************************************************************/
 
 #include "StreamSerialization.hpp"
 
 using namespace rohan;
-using nx::Stream;
+using upp::Stream;
 
-StreamSerializer::StreamSerializer(nx::Stream &stream) : stream(stream) {}
+StreamSerializer::StreamSerializer(upp::Stream &stream) : stream(stream) {}
 
 /******************************************************************************/
 
-StreamReader::StreamReader(nx::Stream &stream) : StreamSerializer(stream) {}
+StreamReader::StreamReader(upp::Stream &stream) : StreamSerializer(stream) {}
 
 void StreamReader::read(void * to, size_t length) {
     size_t n=stream.read(to, length);
@@ -24,7 +24,7 @@ void StreamReader::read(void * to, size_t length) {
 
 /******************************************************************************/
 
-StreamWriter::StreamWriter(nx::Stream &stream) : StreamSerializer(stream) {}
+StreamWriter::StreamWriter(upp::Stream &stream) : StreamSerializer(stream) {}
 
 void StreamWriter::write(const void * from, size_t length) {
     size_t n=stream.write(from, length);
