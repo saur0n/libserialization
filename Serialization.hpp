@@ -1,7 +1,7 @@
 /*******************************************************************************
  *  Rohan data serialization library.
  *  
- *  © 2016—2020, Sauron
+ *  © 2016—2021, Sauron
  ******************************************************************************/
 
 #ifndef __ROHAN_SERIALIZATION_HPP
@@ -41,6 +41,15 @@ public:
     virtual ~Writer() {}
     /** Write a portion of data **/
     virtual void write(const void * from, size_t length)=0;
+    /** Write several values at once **/
+    template <class T, class... A>
+    void write(T&& first, A&&... rest) {
+        *this | first;
+        write(rest...);
+    }
+    
+private:
+    void write() {}
 };
 
 unsigned long long readVariableInteger(Reader &stream);
