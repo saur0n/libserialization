@@ -43,13 +43,13 @@ public:
     virtual void write(const void * from, size_t length)=0;
     /** Write several values at once **/
     template <class T, class... A>
-    void write(T&& first, A&&... rest) {
+    void put(T&& first, A&&... rest) {
         *this | first;
-        write(rest...);
+        put(rest...);
     }
     
 private:
-    void write() {}
+    void put() {}
 };
 
 unsigned long long readVariableInteger(Reader &stream);
