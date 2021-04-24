@@ -1,7 +1,7 @@
 /*******************************************************************************
  *  Rohan data serialization library.
  *  
- *  © 2016—2020, Sauron
+ *  © 2016—2021, Sauron
  ******************************************************************************/
 
 #ifndef __ROHAN_BYTEARRAYSTREAM_HPP
@@ -14,19 +14,24 @@ namespace rohan {
 /** Reader for buffered data **/
 class ByteArrayReader : public Reader {
 public:
-    /**/
+    /** Initialize from pointer and length **/
+    ByteArrayReader(const void * data, size_t length);
+    /** Initialize from byte array **/
     ByteArrayReader(const std::vector<uint8_t> &buffer, size_t offset=0);
-    /** Returns underlying byte array **/
-    const std::vector<uint8_t> &getBuffer() const { return buffer; }
+    /** Return pointer to the start of byte array **/
+    const void * getData() const { return data; }
+    /** Returns total data length **/
+    size_t getLength() const { return length; }
     /** Read a portion of data **/
-    void read(void * to, size_t length);
+    void read(void * to, size_t length) override;
     /** Returns the number of bytes which are already read **/
     size_t consumed() const { return offset; }
     /** Returns the number of bytes that can be read **/
     size_t available() const;
     
 private:
-    const std::vector<uint8_t> &buffer;
+    const void * data;
+    size_t length;
     size_t offset;
 };
 
@@ -34,11 +39,25 @@ private:
 class ByteArrayWriter : public Writer {
 public:
     /**/
-    ByteArrayWriter(std::vector<uint8_t> &buffer);
+    explicit ByteArrayWriter(size_t capacity=0);
     /** Returns underlying byte array **/
-    std::vector<uint8_t> &getBuffer() const { return buffer; }
+    virtual std::vector<uint8_t> &getBuffer() { return buffer; }
     /** Write a portion of data **/
-    void write(const void * from, size_t length);
+    void write(const void * from, size_t length) override;
+    
+private:
+    std::vector<uint8_t> buffer;
+};
+
+/** Writer for buffered data **/
+class ByteArrayRefWriter : public Writer {
+public:
+    /**/
+    ByteArrayRefWriter(std::vector<uint8_t> &buffer);
+    /** Returns underlying byte array **/
+    virtual std::vector<uint8_t> &getBuffer() { return buffer; }
+    /** Write a portion of data **/
+    void write(const void * from, size_t length) override;
     
 private:
     std::vector<uint8_t> &buffer;
