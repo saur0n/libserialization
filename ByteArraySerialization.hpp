@@ -40,8 +40,8 @@ class ByteArrayWriter : public Writer {
 public:
     /**/
     explicit ByteArrayWriter(size_t capacity=0);
-    /** Returns underlying byte array **/
-    virtual std::vector<uint8_t> &getBuffer() { return buffer; }
+    /** Returns the underlying byte array **/
+    virtual const std::vector<uint8_t> &getBuffer() const { return buffer; }
     /** Write a portion of data **/
     void write(const void * from, size_t length) override;
     
@@ -54,8 +54,8 @@ class ByteArrayRefWriter : public Writer {
 public:
     /**/
     ByteArrayRefWriter(std::vector<uint8_t> &buffer);
-    /** Returns underlying byte array **/
-    virtual std::vector<uint8_t> &getBuffer() { return buffer; }
+    /** Returns the underlying byte array **/
+    virtual const std::vector<uint8_t> &getBuffer() const { return buffer; }
     /** Write a portion of data **/
     void write(const void * from, size_t length) override;
     
