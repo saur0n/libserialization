@@ -1,7 +1,7 @@
 /*******************************************************************************
  *  Rohan data serialization library.
  *  
- *  © 2016—2020, Sauron
+ *  © 2016—2023, Sauron
  ******************************************************************************/
 
 #include <cerrno>
@@ -18,7 +18,7 @@ unsigned long long rohan::readVariableInteger(Reader &stream) {
     uint8_t byte=0x80;
     unsigned shift=0;
     while (byte&0x80) {
-        stream | byte;
+        byte=uint8_t(stream);
         result|=((unsigned long long)(byte&0x7f)<<shift);
         shift+=7;
     }
@@ -54,28 +54,8 @@ Writer &rohan::operator |(Writer &stream, const char * string) {
 Writer &rohan::operator |(Writer &stream, const wchar_t * string) {
     size_t length=wcslen(string);
     stream | length;
-    return writeArray(stream, string, length);
+    for (size_t i=0; i<length; i++)
+        stream | string[i];
+    return stream;
 }
 
-/******************************************************************************/
-
-void FileReader::read(void * to, size_t length) {
-    size_t nr=0;
-    while (nr<length) {
-        auto retval=::read(fd, reinterpret_cast<uint8_t *>(to)+nr, length);
-        if (retval<0)
-            throw system_error(errno, std::generic_category());
-        else if (retval==0)
-            throw End();
-        else
-            nr+=retval;
-    }
-}
-
-/******************************************************************************/
-
-void FileWriter::write(const void * buffer, size_t length) {
-    auto retval=::write(fd, buffer, length);
-    if (retval<0)
-        throw system_error(errno, std::generic_category());
-}

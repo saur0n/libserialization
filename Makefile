@@ -1,7 +1,7 @@
 ################################################################################
 #   Rohan data serialization library.
 #
-#   © 2016—2020, Sauron
+#   © 2016—2023, Sauron
 ################################################################################
 
 CXXFLAGS=-Wall -Wextra -std=gnu++11 -O3
@@ -23,10 +23,10 @@ test: $(UNITTEST)
 	./$(UNITTEST)
 
 $(LIBRARY): $(SOURCES) $(HEADERS)
-	g++ $(CXXFLAGS) -shared -fPIC -o $(LIBRARY) -l stdc++ $(SOURCES)
+	g++ $(CXXFLAGS) -shared -fPIC -o $(LIBRARY) $(SOURCES) -lstdc++
 
 $(UNITTEST): *.cpp *.hpp
-	g++ $(CXXFLAGS) -o $(UNITTEST) -l stdc++ *.cpp
+	g++ $(CXXFLAGS) -o $(UNITTEST) *.cpp -lstdc++ -lunix++
 
 .PHONY: all clean install test
 

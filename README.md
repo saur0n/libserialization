@@ -4,7 +4,7 @@ This library allows to serialize standard C++ data types to binary form.
 
 ## Supported data types
 
-Serializing and deserializing of the following data types is supported:
+Serialization and deserialization of the following data types is supported:
 * `bool`
 * `char`
 * `int8_t`
@@ -17,30 +17,73 @@ Serializing and deserializing of the following data types is supported:
 * `uint64_t`
 * `long long` (not the same as `int64_t`)
 * `unsigned long long` (not the same as `uint64_t`)
-* fixed-size arrays
 * `std::array`
 * `std::basic_string`
+* `std::map`
 * `std::pair`
+* `std::set`
+* `std::vector`
 
 Serialization of the following data types is supported:
+* fixed-size arrays
 * `const char *` (C-strings)
-* any classes with `serialize()` method
-* `std::vector`
-* `std::map`
+* any classes that have `serialize()` method (see below)
 
 Deserialization of the following data types is supported:
-* `std::vector<T>`, where T is default constructible or `InputStream` constructible
-* `std::map<K, V>`, where K and V are both default constructible
+* any custom classes which have deserialization constructor (see below)
+
+Serialization and deserialization of `float`, `double` and `long double` are implemented, but data format will be changed in future.
 
 ## Usage
 
 The following include statement is necessary:
 ```
-#include <rohan/Stream.hpp>
+#include <rohan/Serializer.hpp>
 ```
 
 Optional `using` directives:
 ```
 using rohan::InputStream;
 using rohan::OutputStream;
+```
+
+### Writing data
+Data is written using the `|` operator:
+```
+const unsigned magic=0x4698CD67;
+std::vector<std::string> vec {"alpha", "beta", "gamma"};
+writer | magic | vec | "string";
+```
+
+To write fields of a class, add constant method `serialize()`:
+```
+class Color {
+public:
+    explicit Color(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b) {}
+    void serialize(Writer &writer) const {
+        writer | r | g | b;
+    }
+private:
+    uint8_t r, g, b;
+};
+```
+
+### Reading data
+Data is read from the stream using type conversion operator:
+```
+unsigned nCows=unsigned(reader);
+std::vector<std::string> vec=std::vector<std::string>(reader);
+```
+
+To read fields of a class, create a unserialization constructor:
+```
+class Color {
+public:
+    explicit Color(Reader &reader) :
+        r(uint8_t(reader)),
+        g(uint8_t(reader)),
+        b(uint8_t(reader)) {}
+private:
+    uint8_t r, g, b;
+};
 ```

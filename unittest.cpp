@@ -2,352 +2,164 @@
  *  Rohan data serialization library
  *  Unit tests
  *  
- *  © 2016—2020, Sauron
+ *  © 2016—2023, Sauron
  ******************************************************************************/
 
-#include <cerrno>
-#include <cmath>
-#include <cstring>
-#include <fcntl.h>
+#include <cassert>
 #include <iostream>
-#include <unistd.h>
-#include "Serialization.hpp"
+#include "FileSerialization.hpp"
 
 using namespace rohan;
 using namespace std;
 
-class File {
+const string EMPTY_STRING;
+const string TEST_STRING="The quick brown fox jumps over the lazy dog";
+
+class Record {
 public:
-    File(const char * filename, int mode=O_RDONLY, int rights=0) : fd(open(filename, mode, rights)) {
-        if (fd<0)
-            throw errno;
+    Record(unsigned id, const char * str) : id(id), str(str) {}
+    Record(Reader &reader) : id(unsigned(reader)), str(string(reader)) {}
+    void serialize(Writer &writer) const {
+        writer | id | str;
     }
-    virtual ~File() {
-        close(fd);
-    }
-    int getDescriptor() const { return fd; }
     
-protected:
-    File(File &)=delete;
-    
-    int fd;
+    unsigned id;
+    string str;
 };
 
-/*
- *  This class is an example of usage of the serialize() method.
- */
-class Variant {
-public:
-    explicit Variant(bool boolean) : type(boolean?1:0), number(0) {}
-    explicit Variant(unsigned number) : type(2), number(number) {}
-    explicit Variant(Reader &is) : type(0), number(0) {
-        is | type;
-        if (type==2)
-            is | number;
-    }
-    bool isBoolean() const {
-        return type<2;
-    }
-    bool getBoolean() const {
-        if (!isBoolean())
-            throw "type mismatch";
-        else
-            return type==1;
-    }
-    bool isNumber() const {
-        return type==2;
-    }
-    unsigned getNumber() const {
-        if (!isNumber())
-            throw "type mismatch";
-        else
-            return number;
-    }
-    void serialize(Writer &os) const {
-        os | type;
-        if (isNumber())
-            os | number;
-    }
-    bool operator ==(const Variant &other) const {
-        if (type!=other.type)
-            return false;
-        else if ((type==2)&&(number!=other.number))
-            return false;
-        else
-            return true;
-    }
-    bool operator !=(const Variant &other) const {
-        return !operator ==(other);
-    }
+template <class T>
+map<string, T> createMap(std::initializer_list<T> list) {
+    map<string, T> result;
+    for (auto i=list.begin(); i!=list.end(); ++i)
+        result[std::to_string(i-list.begin())]=*i;
+    return result;
+}
+
+template <class T>
+void testContainers(Writer &writer, std::initializer_list<T> list) {
+    using Array=array<T, 16>;
+    using Pair=pair<string, T>;
+    using Map=map<string, T>;
     
-private:
-    unsigned char type;
-    unsigned number;
-};
-
-static int sequence(size_t index) {
-    return (index*539871334)%2395983;
+    // Fixed arrays
+    Array array;
+    T carray[16];
+    for (size_t i=0; i<16; i++)
+        array[i]=carray[i]=list.begin()[i%list.size()];
+    writer | carray | array;
+    
+    // Vector
+    writer | vector<T>() | vector<T>(list);
+    
+    // Set
+    writer | set<T>() | set<T>(list);
+    
+    // Pair
+    writer | Pair("key", *list.begin());
+    
+    // Map
+    writer | Map() | createMap(list);
 }
 
 template <class T>
-static void readValue(Reader &is, T correct, const char * error) {
-    T x;
-    is | x;
-    if (x!=correct)
-        throw error;
+void testContainers(Reader &reader, std::initializer_list<T> list) {
+    using Array=array<T, 16>;
+    using Pair=pair<string, T>;
+    using Map=map<string, T>;
+    
+    // Fixed arrays
+    Array expected;
+    for (size_t i=0; i<16; i++)
+        expected[i]=list.begin()[i%list.size()];
+    assert(expected==Array(reader)); // C++ array
+    assert(expected==Array(reader)); // C array
+    
+    // Vector
+    assert(vector<T>(reader)==vector<T>());
+    assert(vector<T>(reader)==vector<T>(list));
+    
+    // Set
+    assert(set<T>(reader)==set<T>());
+    assert(set<T>(reader)==set<T>(list));
+    
+    // Pair
+    assert(Pair(reader)==Pair("key", *list.begin()));
+    
+    // Map
+    assert(Map(reader)==Map());
+    assert(Map(reader)==createMap(list));
 }
 
-static void readVariant(Reader &is, Variant correct, const char * error) {
-    Variant v(is);
-    if (v!=correct)
-        throw error;
+void testWriter(Writer &writer) {
+    // Basic types
+    writer | false | true;
+    writer | uint8_t(100) | uint8_t(200);
+    writer | int8_t(-100) | int8_t(100);
+    writer | uint16_t(10050) | uint16_t(20050);
+    writer | int16_t(-10050) | int16_t(10050);
+    writer | uint32_t(100500) | uint32_t(200500);
+    writer | int32_t(-100500) | int32_t(100500);
+    writer | uint64_t(100500100500ULL) | uint64_t(200300200300ULL);
+    writer | int64_t(-100500100500LL) | int64_t(100500100500LL);
+    
+    // String types
+    writer | "" | "The moose in the noose ate the goose who was loose";
+    writer | EMPTY_STRING | TEST_STRING;
+    
+    // Serializables
+    writer | Record(324930, "alpha") | Record(492042, "beta");
+    
+    // Linear containers
+    testContainers<unsigned>(writer, {1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144});
+    testContainers<string>(writer, {"alpha", "beta", "gamma", "delta"});
 }
 
-template <class T>
-static void readInteger(Reader &is) {
-    readValue<T>(is, 0, "wrong integer");
-    readValue<T>(is, T(0xfeac9c0), "wrong integer");
-}
-
-template <class T>
-static void readFloat(Reader &is) {
-    readValue<T>(is, 0.0, "wrong float");
-    readValue<T>(is, M_PI, "wrong float");
-}
-
-template <class T>
-static void writeInteger(Writer &stream) {
-    stream | T(0) | T(0xfeac9c0);
-}
-
-template <class T>
-static void writeFloat(Writer &stream) {
-    stream | T(0.0) | T(M_PI);
+void testReader(Reader &reader) {
+    // Basic types
+    assert(bool(reader)==false);
+    assert(bool(reader)==true);
+    assert(uint8_t(reader)==100);
+    assert(uint8_t(reader)==200);
+    assert(int8_t(reader)==-100);
+    assert(int8_t(reader)==100);
+    assert(uint16_t(reader)==10050);
+    assert(uint16_t(reader)==20050);
+    assert(int16_t(reader)==-10050);
+    assert(int16_t(reader)==10050);
+    assert(uint32_t(reader)==100500);
+    assert(uint32_t(reader)==200500);
+    assert(int32_t(reader)==-100500);
+    assert(int32_t(reader)==100500);
+    assert(uint64_t(reader)==100500100500ULL);
+    assert(uint64_t(reader)==200300200300ULL);
+    assert(int64_t(reader)==-100500100500LL);
+    assert(int64_t(reader)==100500100500LL);
+    
+    // String types
+    assert(string(reader).empty());
+    assert(string(reader)=="The moose in the noose ate the goose who was loose");
+    assert(string(reader).empty());
+    assert(string(reader)==TEST_STRING);
+    
+    // Serializables
+    Record a(reader);
+    Record b=Record(reader);
+    
+    // Linear containers
+    testContainers<unsigned>(reader, {1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144});
+    testContainers<string>(reader, {"alpha", "beta", "gamma", "delta"});
 }
 
 int main(int argc, char ** argv) {
     (void)argc;
+    (void)argv;
     
-    static const char * FILENAME="temporary.data";
-    static const uint8_t MAGIC[8]={'R', 'o', 'h', 'a', 'n', 0, '~', '1'};
-    const size_t ARRAYSIZE=8;
-    const size_t NFIB=64;
+    FileWriter fw("/tmp/serialization.test");
+    testWriter(fw);
     
-    try {
-        // Various arrays of integers
-        int ints[ARRAYSIZE];
-        std::array<int, ARRAYSIZE> integers;
-        std::vector<int> integerv(ARRAYSIZE);
-        std::vector<std::pair<unsigned, float>> pairs(ARRAYSIZE);
-        std::map<unsigned, std::string> map;
-        std::vector<Variant> variantv;
-        for (unsigned i=0; i<ARRAYSIZE; i++) {
-            ints[i]=integers[i]=integerv[i]=sequence(i);
-            pairs[i].first=i;
-            pairs[i].second=sequence(i);
-            char buffer[32];
-            sprintf(buffer, "{%u==0x%08x}", i, i);
-            map[i]=buffer;
-            if (i%9==0)
-                variantv.emplace_back(true);
-            else if (i%2==0)
-                variantv.emplace_back(false);
-            else
-                variantv.emplace_back(i);
-        }
-        
-        // C-style strings
-        const char * cstring="cstring";
-        const wchar_t * wcstring=L"wcstring";
-        
-        // C++-style strings
-        std::string cxxstring(cstring);
-        std::wstring wcxxstring(wcstring);
-        
-        {
-            File of(FILENAME, O_WRONLY|O_CREAT|O_TRUNC, 0600);
-            FileWriter fos(of.getDescriptor());
-            
-            // Write magic number and version
-            fos | MAGIC | uint8_t(1);
-            
-            // Write first Fibonacci numbers
-            fos | NFIB;
-            uint64_t a=0, b=1;
-            for (unsigned i=0; i<NFIB; i++) {
-                fos | a;
-                uint64_t tmp=b;
-                b+=a;
-                a=tmp;
-            }
-            
-            // Write boolean values
-            bool trueValue=true, falseValue=false;
-            fos | trueValue | falseValue;
-            
-            // Write integers
-            writeInteger<char>(fos);
-            writeInteger<signed char>(fos);
-            writeInteger<unsigned char>(fos);
-            writeInteger<short>(fos);
-            writeInteger<signed short>(fos);
-            writeInteger<unsigned short>(fos);
-            writeInteger<int>(fos);
-            writeInteger<signed int>(fos);
-            writeInteger<unsigned int>(fos);
-            writeInteger<long>(fos);
-            writeInteger<signed long>(fos);
-            writeInteger<unsigned long>(fos);
-            writeInteger<long long>(fos);
-            writeInteger<signed long long>(fos);
-            writeInteger<unsigned long long>(fos);
-            
-            // Write integers with stdint-style names
-            writeInteger<int8_t>(fos);
-            writeInteger<uint8_t>(fos);
-            writeInteger<int16_t>(fos);
-            writeInteger<uint16_t>(fos);
-            writeInteger<int32_t>(fos);
-            writeInteger<uint32_t>(fos);
-            writeInteger<int64_t>(fos);
-            writeInteger<uint64_t>(fos);
-            
-            // Write floating-point values
-            writeFloat<float>(fos);
-            writeFloat<double>(fos);
-            writeFloat<long double>(fos);
-            
-            // Write various arrays of integers
-            fos | ints | integers | integerv;
-            
-            // Write strings
-            fos | cstring | wcstring | cxxstring | wcxxstring;
-            
-            // Write pairs
-            fos | pairs;
-            
-            // Write maps
-            fos | map;
-            
-            // Write single variant values
-            fos | Variant(false) | Variant(true) | Variant(0x31337U);
-            
-            // Write an array of variants
-            fos | variantv;
-        }
-        
-        {
-            File file(FILENAME);
-            FileReader fis(file.getDescriptor());
-            
-            // Read magic number and version
-            uint8_t magic[8], version;
-            fis | magic | version;
-            if (0!=memcmp(MAGIC, magic, 8))
-                throw "wrong magic number";
-            if (version!=1)
-                throw "wrong version";
-            
-            // Read first Fibbonaci numbers
-            unsigned count;
-            fis | count;
-            uint64_t a=0, b=1;
-            for (unsigned i=0; i<count; i++) {
-                readValue<uint64_t>(fis, a, "wrong Fibonacci number");
-                uint64_t tmp=b;
-                b+=a;
-                a=tmp;
-            }
-            
-            // Read boolean values
-            readValue<bool>(fis, true, "wrong boolean");
-            readValue<bool>(fis, false, "wrong boolean");
-            
-            // Read integers
-            readInteger<char>(fis);
-            readInteger<signed char>(fis);
-            readInteger<unsigned char>(fis);
-            readInteger<short>(fis);
-            readInteger<signed short>(fis);
-            readInteger<unsigned short>(fis);
-            readInteger<int>(fis);
-            readInteger<signed int>(fis);
-            readInteger<unsigned int>(fis);
-            readInteger<long>(fis);
-            readInteger<signed long>(fis);
-            readInteger<unsigned long>(fis);
-            readInteger<long long>(fis);
-            readInteger<signed long long>(fis);
-            readInteger<unsigned long long>(fis);
-            
-            // Read integers with stdint-style names
-            readInteger<int8_t>(fis);
-            readInteger<uint8_t>(fis);
-            readInteger<int16_t>(fis);
-            readInteger<uint16_t>(fis);
-            readInteger<int32_t>(fis);
-            readInteger<uint32_t>(fis);
-            readInteger<int64_t>(fis);
-            readInteger<uint64_t>(fis);
-            
-            // Read floating-point values
-            readFloat<float>(fis);
-            readFloat<double>(fis);
-            readFloat<long double>(fis);
-            
-            // Read various arrays of integers
-            int nints[ARRAYSIZE];
-            std::array<int, ARRAYSIZE> nintegers;
-            std::vector<int> nintegerv;
-            fis | nints | nintegers | nintegerv;
-            if (integerv.size()!=nintegerv.size())
-                throw "wrong size of vector";
-            for (size_t i=0; i<ARRAYSIZE; i++) {
-                if (ints[i]!=nints[i])
-                    throw "wrong C-style array of integers";
-                if (integers[i]!=nintegers[i])
-                    throw "wrong C++-style array of integers";
-                if (integerv[i]!=nintegerv[i])
-                    throw "wrong array of integers";
-            }
-            
-            // Read C++-style strings
-            readValue<std::string>(fis, cstring, "wrong string");
-            readValue<std::wstring>(fis, wcstring, "wrong wstring");
-            readValue<std::string>(fis, cxxstring, "wrong string");
-            readValue<std::wstring>(fis, wcxxstring, "wrong wstring");
-            
-            // Read pairs
-            readValue(fis, pairs, "wrong pairs");
-            
-            // Read map
-            readValue(fis, map, "wrong map");
-            
-            // Read single variant values
-            readVariant(fis, Variant(false), "wrong variant #1");
-            readVariant(fis, Variant(true), "wrong variant #2");
-            readVariant(fis, Variant(0x31337U), "wrong variant #3");
-            
-            // Read an array of variants
-            std::vector<Variant> nvariantv;
-            fis | nvariantv;
-            if (variantv.size()!=nvariantv.size())
-                throw "wrong size of variant vector";
-            for (size_t i=0; i<variantv.size(); i++)
-                if (variantv[i]!=nvariantv[i])
-                    throw "wrong variant";
-        }
-        
-        cerr << "SUCCESS" << endl;
-        
-        return 0;
-    }
-    catch (const char * error) {
-        cerr << argv[0] << ": " << error << endl;
-        return 1;
-    }
-    catch (int error) {
-        cerr << argv[0] << ": " << strerror(error) << endl;
-        return 1;
-    }
+    FileReader fr("/tmp/serialization.test");
+    testReader(fr);
+    
+    cout << "SUCCESS!" << endl;
+    return 0;
 }
