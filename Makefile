@@ -4,7 +4,8 @@
 #   © 2016—2023, Sauron
 ################################################################################
 
-CXXFLAGS=-Wall -Wextra -std=gnu++11 -O3
+CC=$(if $(TOOLCHAIN), /usr/bin/$(TOOLCHAIN)-)g++
+CXXFLAGS=-Wall -Wextra -O3
 LIBRARY=libserialization.so
 HEADERS=*Serialization.hpp
 SOURCES=*Serialization.cpp
@@ -23,10 +24,10 @@ test: $(UNITTEST)
 	./$(UNITTEST)
 
 $(LIBRARY): $(SOURCES) $(HEADERS)
-	g++ $(CXXFLAGS) -shared -fPIC -o $(LIBRARY) $(SOURCES) -lstdc++
+	$(CC) $(CXXFLAGS) -shared -fPIC -o $(LIBRARY) $(SOURCES) -lstdc++ -lunix++
 
 $(UNITTEST): *.cpp *.hpp
-	g++ $(CXXFLAGS) -o $(UNITTEST) *.cpp -lstdc++ -lunix++
+	$(CC) $(CXXFLAGS) -o $(UNITTEST) *.cpp -lstdc++ -lunix++
 
 .PHONY: all clean install test
 

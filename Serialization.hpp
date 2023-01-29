@@ -136,8 +136,10 @@ _RW_ZIGZAG(int32_t)
 _RW_LEB128(uint32_t)
 _RW_ZIGZAG(int64_t)
 _RW_LEB128(uint64_t)
+#if __LONG_WIDTH__==64
 _RW_ZIGZAG(long long)
 _RW_LEB128(unsigned long long)
+#endif
 _RW_FIXED(float)
 _RW_FIXED(double)
 _RW_FIXED(long double)
