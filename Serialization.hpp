@@ -167,7 +167,7 @@ std::array<T, n> _read(Reader &stream, std::array<T, n> * dummy) {
 }
 
 template <class T, size_t n>
-Writer &operator |(Writer &stream, std::array<T, n> &value) {
+Writer &operator |(Writer &stream, const std::array<T, n> &value) {
     for (size_t i=0; i<n; i++)
         stream | value[i];
     return stream;
