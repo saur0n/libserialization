@@ -2,7 +2,7 @@
  *  Rohan data serialization library.
  *  Serialization to unix++ streams
  * 
- *  © 2020—2021, Sauron
+ *  © 2020—2023, Sauron
  ******************************************************************************/
 
 #include "StreamSerialization.hpp"
@@ -16,10 +16,8 @@ StreamSerializer::StreamSerializer(upp::Stream &stream) : stream(stream) {}
 
 StreamReader::StreamReader(upp::Stream &stream) : StreamSerializer(stream) {}
 
-void StreamReader::read(void * to, size_t length) {
-    size_t n=stream.read(to, length);
-    if (n!=length)
-        throw End();
+size_t StreamReader::read(void * to, size_t length) {
+    return stream.read(to, length);
 }
 
 /******************************************************************************/

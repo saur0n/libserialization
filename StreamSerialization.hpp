@@ -31,7 +31,7 @@ public:
     /** Initialize with a reference to the stream **/
     StreamReader(upp::Stream &stream);
     /** Read a portion of data **/
-    void read(void * to, size_t length) override;
+    size_t read(void * to, size_t length) override;
 };
 
 class StreamWriter : public Writer, StreamSerializer {

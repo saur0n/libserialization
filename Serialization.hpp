@@ -30,13 +30,18 @@ inline T _read(class Reader &stream) {
     static_assert("wrong data type");
 }
 
+/** This exception indicates that end of file or stream was reached **/
+class End {};
+
 /** Abstract data source **/
 class Reader {
 public:
     /** Virtual destructor **/
     virtual ~Reader() {}
     /** Read a portion of data **/
-    virtual void read(void * to, size_t length)=0;
+    virtual size_t read(void * to, size_t length)=0;
+    /** Read a portion of data, throw End() if could not be read completely **/
+    virtual void readFully(void * to, size_t length);
     /** Unserialize a value using "type conversion" style **/
     template <class T, typename std::enable_if<std::is_constructible<T, Reader &>::value, int>::type=0>
     inline explicit operator T() {
@@ -57,6 +62,11 @@ public:
 private:
     void get();
 };
+
+inline void Reader::readFully(void * to, size_t length) {
+    if (length!=read(to, length))
+        throw End();
+}
 
 /** Abstract data sink **/
 class Writer {
@@ -97,7 +107,7 @@ inline typename std::make_unsigned<T>::type _encodeZigzag(T value) {
     inline T _read(Reader &stream, T * dummy=nullptr) { \
         (void)dummy; \
         T result; \
-        stream.read(&result, sizeof(result)); \
+        stream.readFully(&result, sizeof(result)); \
         return result; \
     } \
     inline Writer &operator |(Writer &stream, const T &value) { \
@@ -295,13 +305,6 @@ bool operator !=(Reader &reader, const T &refValue) {
     reader | value;
     return !__equals(value, refValue);
 }
-
-/*******************************************************************************
- *  INPUT/OUTPUT STREAM IMPEMENTATIONS
- ******************************************************************************/
-
-/** Thrown at end-of-file **/
-class End {};
 
 }
 

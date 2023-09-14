@@ -6,7 +6,9 @@
  ******************************************************************************/
 
 #include <cassert>
+#include <cstring>
 #include <iostream>
+#include "BufferedReader.hpp"
 #include "FileSerialization.hpp"
 
 using namespace rohan;
@@ -150,6 +152,31 @@ void testReader(Reader &reader) {
     testContainers<string>(reader, {"alpha", "beta", "gamma", "delta"});
 }
 
+void testBufferedReader() {
+    // Generate a test string
+    vector<uint8_t> rstring(1000000u);
+    for (size_t i=0; i<rstring.size(); i++)
+        rstring[i]=i;//rand();
+    
+    // Write the string into a file
+    upp::File fout("/tmp/serialization.test", O_CREAT|O_TRUNC|O_WRONLY);
+    fout.write(rstring.data(), rstring.size());
+    
+    // Use buffered input stream for reading the file
+    FileReader fr("/tmp/serialization.test");
+    BufferedReader br(fr, 128);
+    size_t offset=0, nRead=0;
+    do {
+        uint8_t temp[256];
+        size_t fragmentLength=1+(rand()%256);
+        nRead=br.read(temp, fragmentLength);
+        assert(0==memcmp(&rstring[offset], temp, nRead));
+        offset+=nRead;
+    } while (nRead);
+    
+    assert(offset==rstring.size());
+}
+
 int main(int argc, char ** argv) {
     (void)argc;
     (void)argv;
@@ -159,6 +186,8 @@ int main(int argc, char ** argv) {
     
     FileReader fr("/tmp/serialization.test");
     testReader(fr);
+    
+    testBufferedReader();
     
     cout << "SUCCESS!" << endl;
     return 0;

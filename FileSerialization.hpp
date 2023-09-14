@@ -25,7 +25,7 @@ public:
     /** Open a file for reading **/
     explicit FileReader(const char * filename, int flags=O_RDONLY);
     /** Read a portion of data **/
-    void read(void * to, size_t length) override;
+    size_t read(void * to, size_t length) override;
 };
 
 /**/
