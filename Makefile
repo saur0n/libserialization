@@ -7,8 +7,9 @@
 CC=$(if $(TOOLCHAIN), /usr/bin/$(TOOLCHAIN)-)g++
 CXXFLAGS=-Wall -Wextra -O3
 LIBRARY=libserialization.so
-HEADERS=*Serialization.hpp
-SOURCES=*Serialization.cpp
+HEADERS=*.hpp
+SOURCES=*.cpp
+LIBRARIES=-lstdc++ -lunix++
 UNITTEST=unittest
 
 all: $(LIBRARY) $(UNITTEST)
@@ -24,10 +25,10 @@ test: $(UNITTEST)
 	./$(UNITTEST)
 
 $(LIBRARY): $(SOURCES) $(HEADERS)
-	$(CC) $(CXXFLAGS) -shared -fPIC -o $(LIBRARY) $(SOURCES) -lstdc++ -lunix++
+	$(CC) $(CXXFLAGS) -shared -fPIC -o $(LIBRARY) $(SOURCES) $(LIBRARIES)
 
-$(UNITTEST): *.cpp *.hpp
-	$(CC) $(CXXFLAGS) -o $(UNITTEST) *.cpp -lstdc++ -lunix++
+$(UNITTEST): $(SOURCES) $(HEADERS) ut/*
+	$(CC) $(CXXFLAGS) -o $(UNITTEST) $(SOURCES) ut/* $(LIBRARIES)
 
 .PHONY: all clean install test
 
