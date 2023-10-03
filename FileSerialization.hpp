@@ -20,15 +20,6 @@ protected:
 };
 
 /**/
-class FileReader : public Reader, FileSerializer {
-public:
-    /** Open a file for reading **/
-    explicit FileReader(const char * filename, int flags=O_RDONLY);
-    /** Read a portion of data **/
-    size_t read(void * to, size_t length) override;
-};
-
-/**/
 class FileWriter : public Writer, FileSerializer {
 public:
     /** Open a file for writing **/

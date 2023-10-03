@@ -8,8 +8,9 @@
 #include <cassert>
 #include <cstring>
 #include <iostream>
-#include "BufferedReader.hpp"
-#include "FileSerialization.hpp"
+#include "../BufferedReader.hpp"
+#include "../FileReader.hpp"
+#include "../FileSerialization.hpp"
 
 using namespace rohan;
 using namespace std;
