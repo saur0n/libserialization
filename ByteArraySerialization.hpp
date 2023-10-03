@@ -14,6 +14,8 @@ namespace rohan {
 /** Reader for buffered data **/
 class ByteArrayReader : public Reader {
 public:
+    /** Create a reader for C string **/
+    explicit ByteArrayReader(const char * data);
     /** Initialize from pointer and length **/
     ByteArrayReader(const void * data, size_t length);
     /** Initialize from byte array **/

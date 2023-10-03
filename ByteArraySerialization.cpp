@@ -13,6 +13,9 @@ using std::vector;
 
 /******************************************************************************/
 
+ByteArrayReader::ByteArrayReader(const char * data) :
+        data(data), length(strlen(data)), offset(0) {}
+
 ByteArrayReader::ByteArrayReader(const void * data, size_t length) :
         data(data), length(length), offset(0) {}
 
@@ -21,7 +24,7 @@ ByteArrayReader::ByteArrayReader(const vector<uint8_t> &buffer,
 
 size_t ByteArrayReader::read(void * to, size_t length) {
     if (available()<length)
-        length-=available();
+        length=available();
     memcpy(to, reinterpret_cast<const uint8_t *>(data)+offset, length);
     offset+=length;
     return length;
