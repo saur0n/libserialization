@@ -271,6 +271,17 @@ Writer &operator |(Writer &stream, const std::set<T> &set) {
     return stream;
 }
 
+template<class T, typename = std::enable_if_t<std::is_enum_v<T>>>
+T _read(Reader &stream, T * dummy) {
+    (void)dummy;
+    return T(uint8_t(stream));
+}
+
+template<class T, typename = std::enable_if_t<std::is_enum_v<T>>>
+Writer &operator |(Writer &stream, T value) {
+    return stream | uint8_t(value);
+}
+
 Writer &operator |(Writer &stream, const char * string);
 
 Writer &operator |(Writer &stream, const wchar_t * string);
