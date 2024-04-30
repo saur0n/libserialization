@@ -32,7 +32,7 @@ private:
     Reader &base;
     size_t bufferSize;
     size_t position;
-    std::vector<char> buffer;
+    std::vector<uint8_t> buffer;
 };
 
 }
