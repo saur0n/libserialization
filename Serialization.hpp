@@ -1,7 +1,7 @@
 /*******************************************************************************
  *  Rohan data serialization library.
  *  
- *  © 2016—2023, Sauron
+ *  © 2016—2024, Sauron
  ******************************************************************************/
 
 #ifndef __ROHAN_SERIALIZATION_HPP
@@ -40,6 +40,8 @@ public:
     virtual ~Reader() {}
     /** Read a portion of data **/
     virtual size_t read(void * to, size_t length)=0;
+    /** Skip a portion of data **/
+    virtual size_t skip(size_t length)=0;
     /** Read a portion of data, throw End() if could not be read completely **/
     virtual void readFully(void * to, size_t length);
     /** Unserialize a value using "type conversion" style **/

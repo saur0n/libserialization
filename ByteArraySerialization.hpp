@@ -1,7 +1,7 @@
 /*******************************************************************************
  *  Rohan data serialization library.
  *  
- *  © 2016—2023, Sauron
+ *  © 2016—2024, Sauron
  ******************************************************************************/
 
 #ifndef __ROHAN_BYTEARRAYSTREAM_HPP
@@ -26,6 +26,8 @@ public:
     size_t getLength() const { return length; }
     /** Read a portion of data **/
     size_t read(void * to, size_t length) override;
+    /** Skip a portion of data **/
+    size_t skip(size_t length) override;
     /** Returns the number of bytes which are already read **/
     size_t consumed() const { return offset; }
     /** Returns the number of bytes that can be read **/

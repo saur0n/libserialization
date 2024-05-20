@@ -2,7 +2,7 @@
  *  Rohan data serialization library.
  *  Reader with bufferization
  *  
- *  © 2023, Sauron
+ *  © 2023—2024, Sauron
  ******************************************************************************/
 
 #include <cstring>
@@ -13,8 +13,8 @@ using namespace rohan;
 
 /******************************************************************************/
 
-BufferedReader::BufferedReader(Reader &base, size_t bufferSize) :
-        base(base), bufferSize(bufferSize), position(0) {
+BufferedReader::BufferedReader(Reader &source, size_t bufferSize) :
+        source(source), bufferSize(bufferSize), position(0) {
     if (!bufferSize)
         throw std::invalid_argument("bufferSize");
 }
@@ -48,7 +48,7 @@ size_t BufferedReader::read(void * to, size_t length) {
             }
             if (length>bufferSize) {
                 // Do not use the buffer
-                result+=base.read(destination, length);
+                result+=source.read(destination, length);
             }
             else {
                 // Read the data, and return part of them to the caller
@@ -71,9 +71,37 @@ size_t BufferedReader::read(void * to, size_t length) {
     return result;
 }
 
+size_t BufferedReader::skip(size_t length) {
+    size_t result=0;
+    
+    if (length) {
+        size_t available=buffer.size()-position;
+        
+        if (available<length) {
+            if (available) {
+                // Scratch out the buffer
+                position=buffer.size();
+                length-=available;
+                result=available;
+            }
+            
+            if (length) {
+                // Do not use the buffer
+                result+=source.skip(length);
+            }
+        }
+        else {
+            position+=length;
+            result=length;
+        }
+    }
+    
+    return result;
+}
+
 void BufferedReader::populate() {
     buffer.resize(bufferSize);
-    size_t length=base.read(&buffer[0], buffer.size());
+    size_t length=source.read(&buffer[0], buffer.size());
     if (length!=buffer.size())
         buffer.resize(length);
     position=0;

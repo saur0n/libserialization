@@ -2,7 +2,7 @@
  *  Rohan data serialization library.
  *  Byte array serialization
  *  
- *  © 2016—2023, Sauron
+ *  © 2016—2024, Sauron
  ******************************************************************************/
 
 #include <cstring>
@@ -28,6 +28,12 @@ size_t ByteArrayReader::read(void * to, size_t length) {
     memcpy(to, reinterpret_cast<const uint8_t *>(data)+offset, length);
     offset+=length;
     return length;
+}
+
+size_t ByteArrayReader::skip(size_t length) {
+    size_t skipped=available()<length?available():length;
+    offset+=skipped;
+    return skipped;
 }
 
 size_t ByteArrayReader::available() const {
