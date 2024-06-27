@@ -1,7 +1,7 @@
 ################################################################################
 #   Rohan data serialization library.
 #
-#   © 2016—2023, Sauron
+#   © 2016—2024, Sauron
 ################################################################################
 
 CC=$(if $(TOOLCHAIN), /usr/bin/$(TOOLCHAIN)-)g++
@@ -19,7 +19,8 @@ clean:
 
 install: $(LIBRARY)
 	install --strip $(LIBRARY) /usr/local/lib64
-	cp -f *.hpp /usr/include/rohan
+	install -d /usr/include/rohan
+	install -m 644 *.hpp /usr/include/rohan
 
 test: $(UNITTEST)
 	./$(UNITTEST)
