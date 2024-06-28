@@ -8,7 +8,7 @@
 #ifndef __ROHAN_BUFFEREDREADER_HPP
 #define __ROHAN_BUFFEREDREADER_HPP
 
-#include "Serialization.hpp"
+#include "Reader.hpp"
 
 namespace rohan {
 

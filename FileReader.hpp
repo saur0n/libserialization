@@ -8,7 +8,7 @@
 #define __ROHAN_FILEREADER_HPP
 
 #include <unix++/File.hpp>
-#include "Serialization.hpp"
+#include "Reader.hpp"
 
 namespace rohan {
 

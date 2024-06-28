@@ -1,14 +1,14 @@
 /*******************************************************************************
  *  Rohan data serialization library.
  *  
- *  © 2016—2023, Sauron
+ *  © 2016—2024, Sauron
  ******************************************************************************/
 
 #ifndef __ROHAN_FILEWRITER_HPP
 #define __ROHAN_FILEWRITER_HPP
 
 #include <unix++/File.hpp>
-#include "Serialization.hpp"
+#include "Writer.hpp"
 
 namespace rohan {
 

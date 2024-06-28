@@ -1,29 +1,15 @@
 /*******************************************************************************
  *  Rohan data serialization library.
  *  
- *  © 2016—2023, Sauron
+ *  © 2016—2024, Sauron
  ******************************************************************************/
 
-#include <cerrno>
 #include <cstring>
-#include <unistd.h>
-#include "Serialization.hpp"
+#include "Writer.hpp"
 
 using namespace rohan;
-using std::system_error;
-using std::vector;
 
-unsigned long long rohan::readVariableInteger(Reader &stream) {
-    unsigned long long result=0;
-    uint8_t byte=0x80;
-    unsigned shift=0;
-    while (byte&0x80) {
-        byte=uint8_t(stream);
-        result|=((unsigned long long)(byte&0x7f)<<shift);
-        shift+=7;
-    }
-    return result;
-}
+/******************************************************************************/
 
 void rohan::writeVariableInteger(Writer &stream, unsigned long long value) {
     uint8_t len=0, buffer[16];
@@ -33,11 +19,6 @@ void rohan::writeVariableInteger(Writer &stream, unsigned long long value) {
     }
     buffer[len++]=value;
     stream.write(buffer, len);
-}
-
-signed long long rohan::readSignedVariableInteger(Reader &stream) {
-    unsigned long long tmp=readVariableInteger(stream);
-    return ((1&tmp)?(tmp^(~0)):tmp)>>1;
 }
 
 void rohan::writeSignedVariableInteger(Writer &stream, signed long long value) {
@@ -58,4 +39,3 @@ Writer &rohan::operator |(Writer &stream, const wchar_t * string) {
         stream | string[i];
     return stream;
 }
-

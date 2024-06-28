@@ -38,13 +38,13 @@ Serialization and deserialization of `float`, `double` and `long double` are imp
 
 The following include statement is necessary:
 ```
-#include <rohan/Serializer.hpp>
+#include <rohan/Reader.hpp>
 ```
 
 Optional `using` directives:
 ```
-using rohan::InputStream;
-using rohan::OutputStream;
+using rohan::Reader;
+using rohan::Writer;
 ```
 
 ### Writing data

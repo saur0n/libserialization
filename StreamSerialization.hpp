@@ -9,7 +9,8 @@
 #define __ROHAN_STREAMSERIALIZATION_HPP
 
 #include <unix++/Stream.hpp>
-#include "Serialization.hpp"
+#include "Reader.hpp"
+#include "Writer.hpp"
 
 namespace rohan {
 

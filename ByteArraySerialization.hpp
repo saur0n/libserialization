@@ -4,10 +4,11 @@
  *  © 2016—2024, Sauron
  ******************************************************************************/
 
-#ifndef __ROHAN_BYTEARRAYSTREAM_HPP
-#define __ROHAN_BYTEARRAYSTREAM_HPP
+#ifndef __ROHAN_BYTEARRAYSERIALIZATION_HPP
+#define __ROHAN_BYTEARRAYSERIALIZATION_HPP
 
-#include "Serialization.hpp"
+#include "Reader.hpp"
+#include "Writer.hpp"
 
 namespace rohan {
 
