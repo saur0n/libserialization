@@ -9,6 +9,7 @@
 
 #include <array>
 #include <cstdint>
+#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -113,6 +114,15 @@ Writer &operator |(Writer &stream, const std::basic_string<T> &string) {
     writeVariableInteger(stream, length);
     for (size_t i=0; i<length; i++)
         stream | string[i];
+    return stream;
+}
+
+template <class T>
+Writer &operator |(Writer &stream, const std::list<T> &list) {
+    size_t length=list.size();
+    writeVariableInteger(stream, length);
+    for (auto i=list.begin(); i!=list.end(); ++i)
+        stream | *i;
     return stream;
 }
 

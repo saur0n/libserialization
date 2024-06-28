@@ -19,6 +19,7 @@ Serialization and deserialization of the following data types is supported:
 * `unsigned long long` (not the same as `uint64_t`)
 * `std::array`
 * `std::basic_string`
+* `std::list`
 * `std::map`
 * `std::pair`
 * `std::set`

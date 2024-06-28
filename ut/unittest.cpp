@@ -2,7 +2,7 @@
  *  Rohan data serialization library
  *  Unit tests
  *  
- *  © 2016—2023, Sauron
+ *  © 2016—2024, Sauron
  ******************************************************************************/
 
 #include <cassert>
@@ -39,7 +39,7 @@ map<string, T> createMap(std::initializer_list<T> list) {
 }
 
 template <class T>
-void testContainers(Writer &writer, std::initializer_list<T> list) {
+void testContainers(Writer &writer, std::initializer_list<T> data) {
     using Array=array<T, 16>;
     using Pair=pair<string, T>;
     using Map=map<string, T>;
@@ -48,24 +48,27 @@ void testContainers(Writer &writer, std::initializer_list<T> list) {
     Array array;
     T carray[16];
     for (size_t i=0; i<16; i++)
-        array[i]=carray[i]=list.begin()[i%list.size()];
+        array[i]=carray[i]=data.begin()[i%data.size()];
     writer | carray | array;
     
+    // List
+    writer | list<T>() | list<T>(data);
+    
     // Vector
-    writer | vector<T>() | vector<T>(list);
+    writer | vector<T>() | vector<T>(data);
     
     // Set
-    writer | set<T>() | set<T>(list);
+    writer | set<T>() | set<T>(data);
     
     // Pair
-    writer | Pair("key", *list.begin());
+    writer | Pair("key", *data.begin());
     
     // Map
-    writer | Map() | createMap(list);
+    writer | Map() | createMap(data);
 }
 
 template <class T>
-void testContainers(Reader &reader, std::initializer_list<T> list) {
+void testContainers(Reader &reader, std::initializer_list<T> data) {
     using Array=array<T, 16>;
     using Pair=pair<string, T>;
     using Map=map<string, T>;
@@ -73,24 +76,28 @@ void testContainers(Reader &reader, std::initializer_list<T> list) {
     // Fixed arrays
     Array expected;
     for (size_t i=0; i<16; i++)
-        expected[i]=list.begin()[i%list.size()];
+        expected[i]=data.begin()[i%data.size()];
     assert(expected==Array(reader)); // C++ array
     assert(expected==Array(reader)); // C array
     
+    // List
+    assert(list<T>(reader)==list<T>());
+    assert(list<T>(reader)==list<T>(data));
+    
     // Vector
     assert(vector<T>(reader)==vector<T>());
-    assert(vector<T>(reader)==vector<T>(list));
+    assert(vector<T>(reader)==vector<T>(data));
     
     // Set
     assert(set<T>(reader)==set<T>());
-    assert(set<T>(reader)==set<T>(list));
+    assert(set<T>(reader)==set<T>(data));
     
     // Pair
-    assert(Pair(reader)==Pair("key", *list.begin()));
+    assert(Pair(reader)==Pair("key", *data.begin()));
     
     // Map
     assert(Map(reader)==Map());
-    assert(Map(reader)==createMap(list));
+    assert(Map(reader)==createMap(data));
 }
 
 void testWriter(Writer &writer) {

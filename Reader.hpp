@@ -8,6 +8,7 @@
 #define __ROHAN_READER_HPP
 
 #include <cstdint>
+#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -127,6 +128,16 @@ std::basic_string<T> _read(Reader &stream, std::basic_string<T> * dummy) {
     result.reserve(std::min(PAGE_SIZE, n));
     while (n-->0)
         result.push_back(T(stream));
+    return result;
+}
+
+template <class T>
+std::list<T> _read(Reader &stream, std::list<T> * dummy) {
+    (void)dummy;
+    std::list<T> result;
+    size_t n=readVariableInteger(stream);
+    for (size_t i=0; i<n; i++)
+        result.emplace_back(stream);
     return result;
 }
 
